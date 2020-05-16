@@ -164,7 +164,7 @@ namespace Methane.Toolkit
 
 
             ulong fsize = CalculateFileSize();
-            Log($"That means {total} words or {(((float)fsize) / (1024 * 1024)).ToString("0.0")} MB  ({fsize} bytes)!");
+            Log($"That means {total} words or {(((float)fsize) / (1024 * 1024)):0.0} MB  ({fsize} bytes)!");
 
 
 
@@ -507,7 +507,7 @@ namespace Methane.Toolkit
             long millisecond = stopwatch.ElapsedMilliseconds;
 
             ulong n = ntotal + current;
-            Log($"Generating {n} of {total} \t {(n * 100.0F / (float)total).ToString("0.0")}% \t speed : {((n - lastCurrent) * 1000f / (millisecond - lastMillies)).ToString("0")} per second");
+            Log($"Generating {n} of {total} \t {n * 100.0F / (float)total:0.0}% \t speed : {(n - lastCurrent) * 1000f / (millisecond - lastMillies):0} per second");
 
 
             lastCurrent = n;

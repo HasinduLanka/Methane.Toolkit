@@ -11,15 +11,14 @@ namespace Methane.Toolkit
     /// </summary>
     public class CSA
     {
-
-        bool UseBFLG;
-        bool UseDicFile;
+        bool UsePipes;
         public List<BFLG> bflgs;
         public List<FileLineReader> DicFiles;
+        public List<IEnumerator<string>> IncrementalInts;
 
-        string mask = "user=*f0*&pass=*b0*&submit=";
+        string mask;
 
-        List<Feed> Feeds;
+        List<CSAFeed> Feeds;
 
 
         public void PromptParamenters()
@@ -31,90 +30,112 @@ namespace Methane.Toolkit
             Log("    . . . . . . . . . . . . . . . .  .  ");
             Log("");
 
-            ChoosePassSource:
-            string PassSource = Prompt("Which feeds to use? [g]enerate using Brute-Force Password Generator ? or Read from [f]ile ? or [b]oth ?");
 
-            switch (PassSource)
+            Log("There are 3 pipeline types to use as substitutions Brute-Force, Dictionary file, Incremental Integers. You can add multiple pipelines from any type");
+            mask = Prompt("Just press [Enter] to use these pipelines OR Enter the plain text to use");
+            UsePipes = string.IsNullOrEmpty(mask);
+
+            if (UsePipes)
             {
-                case "g":
-                    UseBFLG = true;
-                    break;
-                case "f":
-                    UseDicFile = true;
-                    break;
-                case "b":
-                    UseBFLG = true;
-                    UseDicFile = true;
-                    break;
-                default:
-                    Log("Please select from g|f|b");
-                    goto ChoosePassSource;
-            }
 
-
-            if (UseBFLG)
-            {
-                bflgs = new List<BFLG>();
-
-                Log("Please use the following tool to generate your BruteForce pipeline");
-
-                SetupBFLG:
-                try
+                bflgs = null;
+                if (Prompt("Add Brute-Force pipelines?  [y|N]").ToUpper() == "Y")
                 {
-                    Log($"Create BFLG *b{bflgs.Count}*");
+                    bflgs = new List<BFLG>();
 
-                    BFLG bflg = new BFLG();
-                    bflg.PrompParamenters();
-                    bflg.BuildFromParamenters();
+                    SetupBFLG:
+                    try
+                    {
+                        Log($"Creating BFLG *b{bflgs.Count}*");
 
-                    bflgs.Add(bflg);
+                        BFLG bflg = new BFLG();
+                        bflg.PrompParamenters();
+                        bflg.BuildFromParamenters();
+
+                        bflgs.Add(bflg);
+
+                        if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                        {
+                            goto SetupBFLG;
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError(ex);
+                        if (Prompt("Try again? [y]|[N] ").ToUpper() == "Y")
+                            goto SetupBFLG;
+                    }
+
+
+
+                    Log($"{bflgs.Count} Password pipelines standby");
+                }
+
+
+
+                DicFiles = null;
+                if (Prompt("Add Dictionary pipelines?  [y|N]").ToUpper() == "Y")
+                {
+                    DicFiles = new List<FileLineReader>();
+
+                    PromptFileName:
+                    string DicFileName = Prompt($"File feed *f{DicFiles.Count}*. Enter the filename to read : ");
+
+                    if (File.Exists(DicFileName))
+                    {
+                        DicFiles.Add(new FileLineReader(DicFileName));
+
+                        if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                        {
+                            goto PromptFileName;
+                        }
+                    }
+                    else
+                    {
+                        if (Prompt("That file does not exist. Try again? [y]|[N]").ToUpper() == "Y")
+                            goto PromptFileName;
+                    }
+
+                    Log($"{DicFiles.Count} Files ready");
+                }
+
+
+                IncrementalInts = null;
+                if (Prompt("Add Incremental 64bit Integer pipelines?  [y|N]").ToUpper() == "Y")
+                {
+                    IncrementalInts = new List<IEnumerator<string>>();
+
+                    PromptStart:
+
+                    Log($"Creating Incremental Int pipeline *i{IncrementalInts.Count}*");
+
+                    if (!long.TryParse(Prompt("Enter start integer"), out long start))
+                    {
+                        Log("Can't read");
+                        goto PromptStart;
+                    }
+
+                    PromptEnd:
+                    if (!long.TryParse(Prompt("Enter end integer (Inclusive)"), out long end))
+                    {
+                        Log("Can't read");
+                        goto PromptEnd;
+                    }
+
+                    IncrementalInts.Add(IncrementalInt(start, end).GetEnumerator());
 
                     if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
                     {
-                        goto SetupBFLG;
+                        goto PromptStart;
                     }
 
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex);
-                    if (Prompt("Try again? [y]|[N] ").ToUpper() == "Y")
-                        goto SetupBFLG;
+
                 }
 
-
-
-                Log($"{bflgs.Count} Password pipelines standby");
+                mask = Prompt("Enter Mask string. (Substitutions : *b0* for BFLG0, *f0* for File0 ...) (Ex: 'user=*f0*&pass=ABC*b0*XYZ*f1*' )");
             }
 
-
-            if (UseDicFile)
-            {
-                DicFiles = new List<FileLineReader>();
-
-                PromptFileName:
-                string DicFileName = Prompt($"File feed *f{DicFiles.Count}*. Enter the filename to read : ");
-
-                if (File.Exists(DicFileName))
-                {
-                    DicFiles.Add(new FileLineReader(DicFileName));
-
-                    if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
-                    {
-                        goto PromptFileName;
-                    }
-                }
-                else
-                {
-                    if (Prompt("That file does not exist. Try again? [y]|[N]").ToUpper() == "Y")
-                        goto PromptFileName;
-                }
-
-                Log($"{DicFiles.Count} Files ready");
-            }
-
-
-            mask = Prompt("Enter Mask string. (WildCards : *b0* for BFLG0, *f0* for File0 ...) (Ex: 'user=*f0*&pass=ABC*b0*XYZ*f1*&submit=' )");
 
         }
 
@@ -124,11 +145,7 @@ namespace Methane.Toolkit
 
         public IEnumerator<string> RunIterator()
         {
-
-            Run();
-
-            string CMask = mask;
-            return ReOccuringFeedHierachy(0, CMask).GetEnumerator();
+            return RunEnumerable().GetEnumerator();
 
         }
         public IEnumerable<string> RunEnumerable()
@@ -137,42 +154,47 @@ namespace Methane.Toolkit
             Run();
 
             string CMask = mask;
-            return ReOccuringFeedHierachy(0, CMask);
-
+            if (Feeds.Count > 0)
+                return ReOccuringFeedHierachy(0, CMask);
+            else
+                return ReturnPlainText();
         }
 
 
         private void Run()
         {
-            Feeds = new List<Feed>();
-            List<int> nFeeds = new List<int>();
+            Feeds = new List<CSAFeed>();
 
-            if (UseDicFile)
-            {
+            if (DicFiles != null)
                 for (int nfile = 0; nfile < DicFiles.Count; nfile++)
                 {
 
-                    Feeds.Add(new Feed($"*f{nfile}*", new Func<IEnumerator<string>>(DicFiles[nfile].ReadFileLineByLine)));
-                    nFeeds.Add(0);
+                    Feeds.Add(new CSAFeed($"*f{nfile}*", DicFiles[nfile].ReadFileLineByLine()));
                 }
-            }
 
-
-
-            if (UseBFLG)
-            {
+            if (bflgs != null)
                 for (int nBFLG = 0; nBFLG < bflgs.Count; nBFLG++)
                 {
-                    Feeds.Add(new Feed($"*b{nBFLG}*", new Func<IEnumerator<string>>(bflgs[nBFLG].GenerateIterator)));
-                    nFeeds.Add(0);
+                    Feeds.Add(new CSAFeed($"*b{nBFLG}*", bflgs[nBFLG].GenerateIterator()));
                 }
-            }
+
+            if (IncrementalInts != null)
+                for (int nII = 0; nII < IncrementalInts.Count; nII++)
+                {
+                    Feeds.Add(new CSAFeed($"*i{nII}*", IncrementalInts[nII]));
+                }
+
+
+        }
+        private IEnumerable<string> ReturnPlainText()
+        {
+            yield return mask;
         }
 
         private IEnumerable<string> ReOccuringFeedHierachy(int nFeed, string UpMask)
         {
-            Feed feed = Feeds[nFeed];
-            var Pipe = feed.PipeCreator();
+            CSAFeed feed = Feeds[nFeed];
+            var Pipe = feed.PipeCreator;
 
             loop:
 
@@ -200,8 +222,6 @@ namespace Methane.Toolkit
             {
                 if (nFeed != 0)
                 {
-                    //Pipe = feed.PipeCreator();
-                    //goto loop;
                     yield break;
                 }
                 else
@@ -216,22 +236,31 @@ namespace Methane.Toolkit
 
         }
 
-
-        public class Feed
+        public static IEnumerable<string> IncrementalInt(long start, long end)
         {
-            public string Mask;
-            public Func<IEnumerator<string>> PipeCreator;
-
-
-
-            public Feed() { }
-
-            public Feed(string mask, Func<IEnumerator<string>> pipeCreator)
+            end++;
+            for (long i = start; i < end; i++)
             {
-                Mask = mask;
-                PipeCreator = pipeCreator;
+                yield return i.ToString();
             }
         }
 
+
+
+    }
+    public class CSAFeed
+    {
+        public string Mask;
+        public IEnumerator<string> PipeCreator;
+
+
+
+        public CSAFeed() { }
+
+        public CSAFeed(string mask, IEnumerator<string> pipeCreator)
+        {
+            Mask = mask;
+            PipeCreator = pipeCreator;
+        }
     }
 }

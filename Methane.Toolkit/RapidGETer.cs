@@ -12,8 +12,10 @@ namespace Methane.Toolkit
     public class RapidGETer
     {
 
-        public string Cookie = "";
         public bool HasCookie = false;
+        public bool HasHeaders = false;
+        public string Cookie;
+        public string Headers;
 
         public string findWith;
         public bool hasFindWith;
@@ -59,12 +61,30 @@ namespace Methane.Toolkit
             }
 
 
+            ChooseHeaders:
+            Headers = Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
+
+            HasHeaders = Headers.Length != 0;
+            if (Headers.StartsWith('~'))
+            {
+                if (Headers == "~") Headers = "~headers.txt";
+                try
+                {
+                    Headers = File.ReadAllText(Headers.TrimStart('~'));
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex);
+                    goto ChooseHeaders;
+                }
+            }
+
             findWith = Prompt("In a positive response, what text we would find? (Ex :- Wellcome) [or null]");
             hasFindWith = findWith.Length > 0;
             findWithout = Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
             hasFindWithout = findWithout.Length > 0;
 
-            Prompt("Please use the following tool to create POST body data string list");
+            Log("Please use the following tool to create GET url data string list");
             csa = new CSA();
             csa.PromptParamenters();
 
@@ -100,7 +120,7 @@ namespace Methane.Toolkit
 
             for (int n = 0; n < AllowedThrds; n++)
             {
-                new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(ThrLoop)) { Name = $"POST Thrd {n}" }.Start(null);
+                new System.Threading.Thread(new System.Threading.ThreadStart(ThrLoop)) { Name = $"POST Thrd {n}" }.Start();
                 System.Threading.Thread.Sleep(10);
             }
 
@@ -125,7 +145,7 @@ namespace Methane.Toolkit
         }
 
 
-        private void ThrLoop(object o)
+        private void ThrLoop()
         {
 
             runningThreads++;
@@ -136,39 +156,48 @@ namespace Methane.Toolkit
 
             if (found) { runningThreads--; return; }
 
-            if (bodyPipeline.MoveNext())
+            string url;
+            lock (bodyPipeline)
             {
-                string url = bodyPipeline.Current;
-
-                try
+                if (bodyPipeline.MoveNext())
                 {
-
-                    string resp = GetForm(url);
-
-                    if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
-                    {
-                        Log($"We found it! '{url}' _______ :-) ________________________________");
-                        found = true;
-                        result = url;
-
-                        runningThreads--; return;
-                    }
-                    else
-                    {
-                        Log($"{url} didn't work");
-                    }
-
+                    url = bodyPipeline.Current;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Log($"!!! Error {ex.ToString()} - {ex.Message} @ {ex.StackTrace}");
+                    runningThreads--;
+                    return;
                 }
-
-                goto bodyPipelineMoveNext;
             }
 
 
-            runningThreads--;
+
+            try
+            {
+
+                string resp = GetForm(url);
+
+                if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
+                {
+                    Log($"We found it! '{url}' _______ :-) ________________________________");
+                    found = true;
+                    result = url;
+
+                    runningThreads--; return;
+                }
+                else
+                {
+                    Log($"{url} didn't work");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+            }
+
+            goto bodyPipelineMoveNext;
+
 
         }
 
@@ -204,14 +233,16 @@ namespace Methane.Toolkit
 
 
 
-        public string GetForm(string url)
+        public static string GetForm(string url, string Cookie = "", string Headers = "")
         {
             var wr = WebRequest.CreateHttp(url);
             wr.Method = "GET";
             wr.ContentType = "application/x-www-form-urlencoded";
 
-            if (Cookie != "") wr.Headers.Add(HttpRequestHeader.Cookie, Cookie);
-
+            if (Cookie.Length != 0) wr.Headers.Add(HttpRequestHeader.Cookie, Cookie);
+            if (Headers.Length != 0)
+                foreach (string header in Headers.Split("\n"))
+                    wr.Headers.Add(header);
 
             // Get the response from remote server
             HttpWebResponse httpWebResponse = (HttpWebResponse)wr.GetResponse();
@@ -230,14 +261,16 @@ namespace Methane.Toolkit
             return sb.ToString();
         }
 
-        public HtmlDocument GetFormDoc(string url, string cookie = "")
+        public static HtmlDocument GetFormDoc(string url, string Cookie = "", string Headers = "")
         {
             var wr = WebRequest.CreateHttp(url);
             wr.Method = "GET";
             // wr.ContentType = "multipart/form-data; boundary=---------------------------19609895721194";
 
-            if (cookie != "") wr.Headers.Add(HttpRequestHeader.Cookie, cookie);
-
+            if (Cookie.Length != 0) wr.Headers.Add(HttpRequestHeader.Cookie, Cookie);
+            if (Headers.Length != 0)
+                foreach (string header in Headers.Split("\n"))
+                    wr.Headers.Add(header);
 
             // Get the response from remote server
             HttpWebResponse httpWebResponse = (HttpWebResponse)wr.GetResponse();
