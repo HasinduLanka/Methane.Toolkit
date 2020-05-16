@@ -31,7 +31,7 @@ namespace Methane.Toolkit
             ProgramBegin:
 
 
-            Log("                .                  ");
+            Log("              _ . _                ");
             Log("                .                  ");
             Log("              . . .                ");
             Log("         ................          ");
@@ -45,7 +45,7 @@ namespace Methane.Toolkit
             Log("         ................          ");
             Log("              . . .                ");
             Log("                .                  ");
-            Log("                .                  ");
+            Log("              _ . _                ");
             Log("");
 
             selectSubProgram:
