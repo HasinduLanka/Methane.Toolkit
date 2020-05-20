@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Timers;
-using static Methane.Toolkit.Common;
 using System.Net;
 using System.Diagnostics;
 using System.Text;
@@ -12,6 +11,20 @@ namespace Methane.Toolkit
 {
     public class BFLG
     {
+        readonly UI UI;
+        public BFLG(UI ui)
+        {
+            UI = ui;
+        }
+        public BFLG(int MIN, int MAX, string FAMILIESPROMPT, UI ui, string FILENAME = "get")
+        {
+            UI = ui;
+            min = MIN;
+            max = MAX;
+            familiesPrompt = FAMILIESPROMPT;
+            FileName = FILENAME;
+        }
+
         public int min = 1;
         public int max = 8;
         public string familiesPrompt = "3";
@@ -35,35 +48,35 @@ namespace Methane.Toolkit
         // Public FS As FileStream
         public void PrompParamenters()
         {
-            Log("");
-            Log("......................................");
-            Log("Methane BruteForce word List Generator");
-            Log("......................................");
-            Log("");
-            Log("");
-            Log("Select charactor families to include in words  (index seperated by commas)    Extra : >ABC for prefix ABC; <XYZ to sufix XYZ");
-            Log(" 1. English CAPITAL letters");
-            Log(" 2. English simple letters");
-            Log(" 3. Numbers");
-            Log(" 4. symbols 1 { - _ }");
-            Log(" 4B. symbols 1B { _ - @ # $ & }");
-            Log(@" 5. symbols 2 { | \ ! @ # $ % & * ? < > / ' }");
-            Log(@" 6. All symbols { `~!@#$%^&*()_+-={}[]|\:;'""<>?,./ }");
-            Log(" 7. Spaces");
+            UI.Log("");
+            UI.Log("......................................");
+            UI.Log("Methane BruteForce word List Generator");
+            UI.Log("......................................");
+            UI.Log("");
+            UI.Log("");
+            UI.Log("Select charactor families to include in words  (index seperated by commas)    Extra : >ABC for prefix ABC; <XYZ to sufix XYZ");
+            UI.Log(" 1. English CAPITAL letters");
+            UI.Log(" 2. English simple letters");
+            UI.Log(" 3. Numbers");
+            UI.Log(" 4. symbols 1 { - _ }");
+            UI.Log(" 4B. symbols 1B { _ - @ # $ & }");
+            UI.Log(@" 5. symbols 2 { | \ ! @ # $ % & * ? < > / ' }");
+            UI.Log(@" 6. All symbols { `~!@#$%^&*()_+-={}[]|\:;'""<>?,./ }");
+            UI.Log(" 7. Spaces");
 
-            familiesPrompt = Prompt("Enter indexes : ");
+            familiesPrompt = UI.Prompt("Enter indexes : ");
 
-            min = Math.Max(1, int.Parse(Prompt("\n Enter the min word charactors")));
-            max = Math.Min(100, int.Parse(Prompt(" Enter the max word charactors")));
+            min = Math.Max(1, int.Parse(UI.Prompt("\n Enter the min word charactors")));
+            max = Math.Min(100, int.Parse(UI.Prompt(" Enter the max word charactors")));
 
             if (UseFile)
             {
-                FileName = Prompt("Enter file name to save : ");
-                Log($"Selected {Path.GetFullPath(FileName)}");
+                FileName = UI.Prompt("Enter file name to save : ");
+                UI.Log($"Selected {Path.GetFullPath(FileName)}");
                 SW = new StreamWriter(FileName, false, System.Text.Encoding.UTF7);
             }
 
-            string thrChoice = Prompt("How many threads to use? (Enter 0|1 for single threaded. Enter amount for multiple threads. (Default is 16 - multithreaded)");
+            string thrChoice = UI.Prompt("How many threads to use? (Enter 0|1 for single threaded. Enter amount for multiple threads. (Default is 16 - multithreaded)");
 
             if (int.TryParse(thrChoice, out int choice))
             {
@@ -164,7 +177,7 @@ namespace Methane.Toolkit
 
 
             ulong fsize = CalculateFileSize();
-            Log($"That means {total} words or {(((float)fsize) / (1024 * 1024)):0.0} MB  ({fsize} bytes)!");
+            UI.Log($"That means {total} words or {(((float)fsize) / (1024 * 1024)):0.0} MB  ({fsize} bytes)!");
 
 
 
@@ -177,7 +190,7 @@ namespace Methane.Toolkit
 
         public void GenerateToFile()
         {
-            Log("BFLG writing to file");
+            UI.Log("BFLG writing to file");
             needProgressReport = true;
             GenerateToStream(SW);
         }
@@ -212,7 +225,7 @@ namespace Methane.Toolkit
 
             stream.Flush();
 
-            Log("Done");
+            UI.Log("Done");
         }
 
         private void GenerateToStreamReal(StreamWriter stream)
@@ -252,7 +265,7 @@ namespace Methane.Toolkit
                 System.Threading.Thread.Sleep(500);
             }
 
-            Log("All threads completed.");
+            UI.Log("All threads completed.");
 
         }
 
@@ -262,7 +275,7 @@ namespace Methane.Toolkit
             int lineCount = 0;
             int lineLimit = 2000;
 
-            Log($"Thr {System.Threading.Thread.CurrentThread.Name} started");
+            UI.Log($"Thr {System.Threading.Thread.CurrentThread.Name} started");
 
             while (true)
             {
@@ -289,18 +302,18 @@ namespace Methane.Toolkit
                         {
                             sb.AppendLine(ThrItr.Current);
                             lineCount++;
-                            // Log($"Thr {System.Threading.Thread.CurrentThread.Name} - {s}");
+                            //UI.Log($"Thr {System.Threading.Thread.CurrentThread.Name} - {s}");
                         }
                         else
                         {
                             if (lineCount == 0) //Nothing to save
                             {
-                                Log($"Thr {System.Threading.Thread.CurrentThread.Name} end reached");
+                                UI.Log($"Thr {System.Threading.Thread.CurrentThread.Name} end reached");
                                 goto endVoid;
                             }
                             else
                             {
-                                Log($"Thr {System.Threading.Thread.CurrentThread.Name} end reached. Saving...");
+                                UI.Log($"Thr {System.Threading.Thread.CurrentThread.Name} end reached. Saving...");
                                 goto saveAndEndVoid;
                             }
                         }
@@ -309,7 +322,7 @@ namespace Methane.Toolkit
 
 
 
-                    // Log($"Thr {System.Threading.Thread.CurrentThread.Name} got s");
+                    //UI.Log($"Thr {System.Threading.Thread.CurrentThread.Name} got s");
                 }
 
                 //ThrLock = false;
@@ -353,7 +366,7 @@ namespace Methane.Toolkit
             endVoid:
 
             runningThreads--;
-            Log($"{nOfThreadsToUse - runningThreads} of {nOfThreadsToUse} threads completed");
+            UI.Log($"{nOfThreadsToUse - runningThreads} of {nOfThreadsToUse} threads completed");
 
         }
 
@@ -507,7 +520,7 @@ namespace Methane.Toolkit
             long millisecond = stopwatch.ElapsedMilliseconds;
 
             ulong n = ntotal + current;
-            Log($"Generating {n} of {total} \t {n * 100.0F / (float)total:0.0}% \t speed : {(n - lastCurrent) * 1000f / (millisecond - lastMillies):0} per second");
+            UI.Log($"Generating {n} of {total} \t {n * 100.0F / (float)total:0.0}% \t speed : {(n - lastCurrent) * 1000f / (millisecond - lastMillies):0} per second");
 
 
             lastCurrent = n;
@@ -515,25 +528,15 @@ namespace Methane.Toolkit
 
             if (ntotal >= total)
             {
-                Log("\n ____________________________\n Completed\n ____________________________");
+                UI.Log("\n ____________________________\n Completed\n ____________________________");
                 Tmr.Stop();
                 stopwatch.Reset();
             }
         }
 
 
-        public BFLG()
-        {
-
-        }
 
 
-        public BFLG(int MIN, int MAX, string FAMILIESPROMPT, string FILENAME = "get")
-        {
-            min = MIN;
-            max = MAX;
-            familiesPrompt = FAMILIESPROMPT;
-            FileName = FILENAME;
-        }
+
     }
 }

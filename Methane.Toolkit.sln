@@ -1,10 +1,15 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Methane.Toolkit", "Methane.Toolkit\Methane.Toolkit.csproj", "{7FB17B08-37EA-42A3-A19B-594C47C3772D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Methane.Toolkit", "Methane.Toolkit\Methane.Toolkit.csproj", "{4720DECB-5D8F-4569-9A0B-E109D2A4B6B3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E9BA01CB-3023-4153-98C3-A3913B8CA335}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleDroid", "ConsoleDroid\ConsoleDroid.csproj", "{E61C3CB1-6963-47DA-87B2-060754F9F6BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Methane.Toolkit.Desktop", "Methane.Toolkit.Desktop\Methane.Toolkit.Desktop.csproj", "{2F2D3944-749B-4B6D-95EC-35F8AA6BFC8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4E8C7FE1-39B8-4F3F-B291-4604D40BEC28}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
@@ -15,15 +20,25 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7FB17B08-37EA-42A3-A19B-594C47C3772D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7FB17B08-37EA-42A3-A19B-594C47C3772D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7FB17B08-37EA-42A3-A19B-594C47C3772D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7FB17B08-37EA-42A3-A19B-594C47C3772D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4720DECB-5D8F-4569-9A0B-E109D2A4B6B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4720DECB-5D8F-4569-9A0B-E109D2A4B6B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4720DECB-5D8F-4569-9A0B-E109D2A4B6B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4720DECB-5D8F-4569-9A0B-E109D2A4B6B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E61C3CB1-6963-47DA-87B2-060754F9F6BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E61C3CB1-6963-47DA-87B2-060754F9F6BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E61C3CB1-6963-47DA-87B2-060754F9F6BB}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{E61C3CB1-6963-47DA-87B2-060754F9F6BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E61C3CB1-6963-47DA-87B2-060754F9F6BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E61C3CB1-6963-47DA-87B2-060754F9F6BB}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2F2D3944-749B-4B6D-95EC-35F8AA6BFC8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F2D3944-749B-4B6D-95EC-35F8AA6BFC8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F2D3944-749B-4B6D-95EC-35F8AA6BFC8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F2D3944-749B-4B6D-95EC-35F8AA6BFC8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D6FB5E97-C1F1-49F0-94E2-E18A97CAFD26}
+		SolutionGuid = {81CCDF8C-5714-4AAA-967E-547E006C329A}
 	EndGlobalSection
 EndGlobal

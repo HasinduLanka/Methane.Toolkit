@@ -6,16 +6,23 @@ using System.Text;
 
 namespace Methane.Toolkit
 {
-    public static class Common
+    public class UI
     {
-        private static bool UIFromFile = false;
-        private static bool UIRecord = false;
-        private static string UIRecordFile;
+        public UniUI.IUniCLI CLI;
+        public UI(UniUI.IUniCLI cli)
+        {
+            CLI = cli;
+        }
 
-        private static FileLineReader fileLineReader;
-        private static IEnumerator<string> Commands;
+        private bool UIFromFile = false;
+        private bool UIRecord = false;
+        private string UIRecordFile;
 
-        public static void SwitchToCommandFile(string file)
+        private FileLineReader fileLineReader;
+        private IEnumerator<string> Commands;
+
+
+        public void SwitchToCommandFile(string file)
         {
             fileLineReader?.ReadFileLineByLine().Dispose();
 
@@ -38,7 +45,7 @@ namespace Methane.Toolkit
             }
         }
 
-        public static void BeginUIRecord(string file)
+        public void BeginUIRecord(string file)
         {
             if (string.IsNullOrEmpty(file)) file = "cmd.in";
             if (File.Exists(file))
@@ -50,90 +57,46 @@ namespace Methane.Toolkit
             UIRecordFile = file;
             UIRecord = true;
         }
-        public static void EndUIRecord()
+        public void EndUIRecord()
         {
             UIRecord = false;
         }
 
-        public static void Log(string s)
-        {
-            //string ThrName = System.Threading.Thread.CurrentThread.Name;
+        public void Log(string s) => CLI.Log(s);
 
-            // string LogS = $"{TimeStamp} \t {s} \t {(ThrName == null ? null : $"@ {ThrName}")}";
+        public void LogSpecial(string s) => CLI.LogSpecial(s);
 
-            //Console.WriteLine(LogS);
-            Console.WriteLine(s);
 
-        }
+        public void LogError(Exception ex, string Msg = null) => CLI.LogError(ex, Msg);
 
-        public static void LogSpecial(string s)
-        {
-            Log(s);
-
-            try
-            {
-                File.AppendAllText($"SpecialLog{System.Threading.Thread.CurrentThread.ManagedThreadId}.txt", s + Environment.NewLine);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        public static void LogError(string s)
-        {
-            string ThrName = System.Threading.Thread.CurrentThread.Name;
-
-            string LogS = $"{TimeStamp} \t {s} \t {(ThrName == null ? null : $"@ {ThrName}")}";
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(LogS);
-            Console.ResetColor();
-
-        }
-
-        public static void LogError(Exception ex, string Msg = null)
-        {
-            string ThrName = System.Threading.Thread.CurrentThread.Name;
-
-            string LogS = $"{TimeStamp} \t {Msg} {ex} - {ex.Message} @@ {ex.StackTrace} \t {(ThrName == null ? null : $"@ {ThrName}")}";
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(LogS);
-            Console.ResetColor();
-
-        }
-
-        public static string Prompt(string s)
+        public string Prompt(string s)
         {
             if (UIFromFile)
             {
                 if (!Commands.MoveNext())
                 {
-                    Console.WriteLine(" ___ Command file is over... Switching back to Console mode ___ ");
+                    Log(" ___ Command file is over... Switching back to Console mode ___ ");
                     Commands.Dispose();
                     UIFromFile = false;
                     return Prompt(s);
                 }
 
-                Console.WriteLine($"\t \t >-> {s} ");
+                Log($"\t \t >-> {s} ");
                 string cmd = Commands.Current;
-                Console.WriteLine($"\t \t <-< {cmd} ");
+                Log($"\t \t <-< {cmd} ");
                 return cmd;
 
             }
             else
             {
-                Console.WriteLine($"\t \t {s} ");
-                Console.Write("\t >>> \t");
-                string cmd = Console.ReadLine();
+
+                string ans = CLI.Prompt(s);
 
                 if (UIRecord)
                 {
                     try
                     {
-                        File.AppendAllText(UIRecordFile, cmd + Environment.NewLine);
+                        File.AppendAllText(UIRecordFile, ans + Environment.NewLine);
                     }
                     catch (Exception ex)
                     {
@@ -141,12 +104,12 @@ namespace Methane.Toolkit
                     }
                 }
 
-                return cmd;
+                return ans;
             }
         }
 
-        public static string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }
+        public string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }
 
-        public static Random random = new Random();
+        public Random random = new Random();
     }
 }

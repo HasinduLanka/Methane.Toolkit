@@ -1,25 +1,30 @@
 ﻿using System;
 using System.IO;
-using static Methane.Toolkit.Common;
+
 
 namespace Methane.Toolkit
 {
-    class Program
+    public class Program
     {
-        public static string workspacePath = "workspace";
-        public static void Main(string[] args)
+        public UI UI;
+
+
+        public string workspacePath = "workspace";
+        public void Main(string[] args, UniUI.IUniCLI cli)
         {
+            UI = new UI(cli);
+
 
             foreach (string arg in args)
             {
-                Log(arg);
+                UI.Log(arg);
             }
 
             if (args != null && args.Length > 0)
             {
                 if (File.Exists(args[0]))
                 {
-                    Common.SwitchToCommandFile(args[0]);
+                    UI.SwitchToCommandFile(args[0]);
                 }
             }
             else
@@ -31,37 +36,37 @@ namespace Methane.Toolkit
             ProgramBegin:
 
 
-            Log("              _ . _                ");
-            Log("                .                  ");
-            Log("              . . .                ");
-            Log("         ................          ");
-            Log("-----------------------------------");
-            Log("||             ...               ||");
-            Log("||           Methane             ||");
-            Log("||       Ethical Hacking         ||");
-            Log("||          Tool Kit             ||");
-            Log("||             ...               ||");
-            Log("-----------------------------------");
-            Log("         ................          ");
-            Log("              . . .                ");
-            Log("                .                  ");
-            Log("              _ . _                ");
-            Log("");
+            UI.Log("              _ . _                ");
+            UI.Log("                .                  ");
+            UI.Log("              . . .                ");
+            UI.Log("         ................          ");
+            UI.Log("-----------------------------------");
+            UI.Log("||             ...               ||");
+            UI.Log("||           Methane             ||");
+            UI.Log("||       Ethical Hacking         ||");
+            UI.Log("||          Tool Kit             ||");
+            UI.Log("||             ...               ||");
+            UI.Log("-----------------------------------");
+            UI.Log("         ................          ");
+            UI.Log("              . . .                ");
+            UI.Log("                .                  ");
+            UI.Log("              _ . _                ");
+            UI.Log("");
 
             selectSubProgram:
-            Log("1.bfgl \t\t BFLG - BruteForce List Generator");
-            Log("2.csa \t\t CSA - Complex String Assembler");
-            Log("3.post \t\t RapidPOSTer - HTTP POST form data in bulk");
-            Log("4.testpost \t TestPOST - HTTP POST single request");
-            Log("5.get \t\t RapidGETer - HTTP GET in bulk");
-            Log("6.download \t RapidDownloader - HTTP Download in bulk");
-            Log("7.fileops \t RapidFileOps - Do file operations in bulk");
-            Log("GP. BulkGETPOST - Download, alt and POST form data. (Code it)");
-            Log("c. Run Command file");
-            Log("r. Record Command file");
-            Log("er. End Recording Command file");
+            UI.Log("1.bfgl \t\t BFLG - BruteForce List Generator");
+            UI.Log("2.csa \t\t CSA - Complex String Assembler");
+            UI.Log("3.post \t\t RapidPOSTer - HTTP POST form data in bulk");
+            UI.Log("4.testpost \t TestPOST - HTTP POST single request");
+            UI.Log("5.get \t\t RapidGETer - HTTP GET in bulk");
+            UI.Log("6.download \t RapidDownloader - HTTP Download in bulk");
+            UI.Log("7.fileops \t RapidFileOps - Do file operations in bulk");
+            UI.Log("GP. BulkGETPOST - Download, alt and POST form data. (Code it)");
+            UI.Log("c. Run Command file");
+            UI.Log("r. Record Command file");
+            UI.Log("er. End Recording Command file");
 
-            string subProgram = Prompt("Enter Index to begin");
+            string subProgram = UI.Prompt("Enter Index to begin");
 
             switch (subProgram.ToLower())
             {
@@ -105,16 +110,16 @@ namespace Methane.Toolkit
                     break;
 
                 case "c":
-                    Common.SwitchToCommandFile(Prompt("Enter input command file name (nothing to use cmd.in)"));
+                    UI.SwitchToCommandFile(UI.Prompt("Enter input command file name (nothing to use cmd.in)"));
                     goto ProgramBegin;
 
                 case "r":
-                    Common.BeginUIRecord(Prompt("Enter recording command file name (nothing to use cmd.in)"));
-                    Log("\n \n Always use string indexes for recorded files. This will Help your record to be compatible with updates \n ");
+                    UI.BeginUIRecord(UI.Prompt("Enter recording command file name (nothing to use cmd.in)"));
+                    UI.Log("\n \n Always use string indexes for recorded files. This will Help your record to be compatible with updates \n ");
                     goto ProgramBegin;
 
                 case "er":
-                    Common.EndUIRecord();
+                    UI.EndUIRecord();
                     goto ProgramBegin;
 
                 default:
@@ -123,16 +128,16 @@ namespace Methane.Toolkit
             }
 
 
-            if (Prompt("Program End. Restart? [y]|[N]") != "y") return; ;
+            if (UI.Prompt("Program End. Restart? [y]|[N]") != "y") return; ;
             goto ProgramBegin;
 
         }
 
-        private static void RunBFLG()
+        private void RunBFLG()
         {
-            BFLG bfgl = new BFLG
+            BFLG bfgl = new BFLG(UI)
             {
-                UseFile = Prompt("Write results to [C]onsole window or to a [f]ile").ToUpper() == "F"
+                UseFile = UI.Prompt("Write results to [C]onsole window or to a [f]ile").ToUpper() == "F"
             };
 
             bfgl.PrompParamenters();
@@ -146,59 +151,59 @@ namespace Methane.Toolkit
             {
                 foreach (string key in bfgl.GenerateEnumerable())
                 {
-                    Log(key);
+                    UI.Log(key);
                 }
             }
         }
 
-        private static void RunCSA()
+        private void RunCSA()
         {
-            CSA csa = new CSA();
+            CSA csa = new CSA(UI);
             csa.PromptParamenters();
 
             foreach (string s in csa.RunEnumerable())
             {
-                Log(s);
+                UI.Log(s);
             }
         }
 
-        private static void RunRapidPOSTer()
+        private void RunRapidPOSTer()
         {
-            RapidPOSTer poster = new RapidPOSTer();
+            RapidPOSTer poster = new RapidPOSTer(UI);
             poster.PromptParamenters();
             poster.Run();
         }
 
-        private static void RunRapidGETer()
+        private void RunRapidGETer()
         {
-            RapidGETer geter = new RapidGETer();
+            RapidGETer geter = new RapidGETer(UI);
             geter.PromptParamenters();
             geter.Run();
         }
 
-        private static void RunRapidDownloader()
+        private void RunRapidDownloader()
         {
-            RapidDownloader downloader = new RapidDownloader();
+            RapidDownloader downloader = new RapidDownloader(UI);
             downloader.PromptParamenters();
             downloader.Run();
         }
-        private static void RunRapidFileOps()
+        private void RunRapidFileOps()
         {
-            FileOperation ops = new FileOperation();
+            FileOperation ops = new FileOperation(UI);
             ops.PromptParamenters();
             ops.Run();
         }
 
-        private static void RunTestPOST()
+        private void RunTestPOST()
         {
-            Log("TestPOST - HTTP POST single request");
-            Log(RapidPOSTer.PostForm(Prompt("Enter URL"), Prompt("Enter POST body"), Prompt("Enter Cookies (If any)"), Prompt("Enter headers (If any)")));
+            UI.Log("TestPOST - HTTP POST single request");
+            UI.Log(RapidPOSTer.PostForm(UI.Prompt("Enter URL"), UI.Prompt("Enter POST body"), UI.Prompt("Enter Cookies (If any)"), UI.Prompt("Enter headers (If any)")));
         }
 
 
-        private static void RunGETPOST()
+        private void RunGETPOST()
         {
-            BulkGETPOST bgp = new BulkGETPOST();
+            BulkGETPOST bgp = new BulkGETPOST(UI);
             bgp.Run();
         }
 

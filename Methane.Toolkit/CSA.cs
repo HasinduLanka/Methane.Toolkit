@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using static Methane.Toolkit.Common;
 
 namespace Methane.Toolkit
 {
@@ -11,6 +10,13 @@ namespace Methane.Toolkit
     /// </summary>
     public class CSA
     {
+        readonly UI UI;
+        public CSA(UI ui)
+        {
+            UI = ui;
+        }
+
+
         bool UsePipes;
         public List<BFLG> bflgs;
         public List<FileLineReader> DicFiles;
@@ -23,38 +29,38 @@ namespace Methane.Toolkit
 
         public void PromptParamenters()
         {
-            Log("");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("               Methane                  ");
-            Log("       Complex String Assembler         ");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("       Complex String Assembler         ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
-            Log("There are 3 pipeline types to use as substitutions Brute-Force, Dictionary file, Incremental Integers. You can add multiple pipelines from any type");
-            mask = Prompt("Just press [Enter] to use these pipelines OR Enter the plain text to use");
+            UI.Log("There are 3 pipeline types to use as substitutions Brute-Force, Dictionary file, Incremental Integers. You can add multiple pipelines from any type");
+            mask = UI.Prompt("Just press [Enter] to use these pipelines OR Enter the plain text to use");
             UsePipes = string.IsNullOrEmpty(mask);
 
             if (UsePipes)
             {
 
                 bflgs = null;
-                if (Prompt("Add Brute-Force pipelines?  [y|N]").ToUpper() == "Y")
+                if (UI.Prompt("Add Brute-Force pipelines?  [y|N]").ToUpper() == "Y")
                 {
                     bflgs = new List<BFLG>();
 
                     SetupBFLG:
                     try
                     {
-                        Log($"Creating BFLG *b{bflgs.Count}*");
+                        UI.Log($"Creating BFLG *b{bflgs.Count}*");
 
-                        BFLG bflg = new BFLG();
+                        BFLG bflg = new BFLG(UI);
                         bflg.PrompParamenters();
                         bflg.BuildFromParamenters();
 
                         bflgs.Add(bflg);
 
-                        if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                        if (UI.Prompt("Add another? [y]|[N]").ToUpper() == "Y")
                         {
                             goto SetupBFLG;
                         }
@@ -62,70 +68,70 @@ namespace Methane.Toolkit
                     }
                     catch (Exception ex)
                     {
-                        LogError(ex);
-                        if (Prompt("Try again? [y]|[N] ").ToUpper() == "Y")
+                        UI.LogError(ex);
+                        if (UI.Prompt("Try again? [y]|[N] ").ToUpper() == "Y")
                             goto SetupBFLG;
                     }
 
 
 
-                    Log($"{bflgs.Count} Password pipelines standby");
+                    UI.Log($"{bflgs.Count} Password pipelines standby");
                 }
 
 
 
                 DicFiles = null;
-                if (Prompt("Add Dictionary pipelines?  [y|N]").ToUpper() == "Y")
+                if (UI.Prompt("Add Dictionary pipelines?  [y|N]").ToUpper() == "Y")
                 {
                     DicFiles = new List<FileLineReader>();
 
                     PromptFileName:
-                    string DicFileName = Prompt($"File feed *f{DicFiles.Count}*. Enter the filename to read : ");
+                    string DicFileName = UI.Prompt($"File feed *f{DicFiles.Count}*. Enter the filename to read : ");
 
                     if (File.Exists(DicFileName))
                     {
                         DicFiles.Add(new FileLineReader(DicFileName));
 
-                        if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                        if (UI.Prompt("Add another? [y]|[N]").ToUpper() == "Y")
                         {
                             goto PromptFileName;
                         }
                     }
                     else
                     {
-                        if (Prompt("That file does not exist. Try again? [y]|[N]").ToUpper() == "Y")
+                        if (UI.Prompt("That file does not exist. Try again? [y]|[N]").ToUpper() == "Y")
                             goto PromptFileName;
                     }
 
-                    Log($"{DicFiles.Count} Files ready");
+                    UI.Log($"{DicFiles.Count} Files ready");
                 }
 
 
                 IncrementalInts = null;
-                if (Prompt("Add Incremental 64bit Integer pipelines?  [y|N]").ToUpper() == "Y")
+                if (UI.Prompt("Add Incremental 64bit Integer pipelines?  [y|N]").ToUpper() == "Y")
                 {
                     IncrementalInts = new List<IEnumerator<string>>();
 
                     PromptStart:
 
-                    Log($"Creating Incremental Int pipeline *i{IncrementalInts.Count}*");
+                    UI.Log($"Creating Incremental Int pipeline *i{IncrementalInts.Count}*");
 
-                    if (!long.TryParse(Prompt("Enter start integer"), out long start))
+                    if (!long.TryParse(UI.Prompt("Enter start integer"), out long start))
                     {
-                        Log("Can't read");
+                        UI.Log("Can't read");
                         goto PromptStart;
                     }
 
                     PromptEnd:
-                    if (!long.TryParse(Prompt("Enter end integer (Inclusive)"), out long end))
+                    if (!long.TryParse(UI.Prompt("Enter end integer (Inclusive)"), out long end))
                     {
-                        Log("Can't read");
+                        UI.Log("Can't read");
                         goto PromptEnd;
                     }
 
                     IncrementalInts.Add(IncrementalInt(start, end).GetEnumerator());
 
-                    if (Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                    if (UI.Prompt("Add another? [y]|[N]").ToUpper() == "Y")
                     {
                         goto PromptStart;
                     }
@@ -133,7 +139,7 @@ namespace Methane.Toolkit
 
                 }
 
-                mask = Prompt("Enter Mask string. (Substitutions : *b0* for BFLG0, *f0* for File0 ...) (Ex: 'user=*f0*&pass=ABC*b0*XYZ*f1*' )");
+                mask = UI.Prompt("Enter Mask string. (Substitutions : *b0* for BFLG0, *f0* for File0 ...) (Ex: 'user=*f0*&pass=ABC*b0*XYZ*f1*' )");
             }
 
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using static Methane.Toolkit.Common;
 using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
@@ -12,6 +11,11 @@ namespace Methane.Toolkit
 {
     public class RapidDownloader
     {
+        readonly UI UI;
+        public RapidDownloader(UI ui)
+        {
+            UI = ui;
+        }
 
         public bool HasCookie = false;
         public bool HasHeaders = false;
@@ -28,16 +32,16 @@ namespace Methane.Toolkit
         public void PromptParamenters()
         {
 
-            Log("");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("               Methane                  ");
-            Log("            Bulk HTTP Download          ");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("");
+           UI.Log("");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("               Methane                  ");
+           UI.Log("            Bulk HTTP Download          ");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("");
 
 
             ChooseCookies:
-            Cookie = Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
+            Cookie = UI.Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
             HasCookie = Cookie.Length > 0;
             if (Cookie.StartsWith('~'))
@@ -49,14 +53,14 @@ namespace Methane.Toolkit
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    UI.LogError(ex);
                     goto ChooseCookies;
                 }
             }
 
 
             ChooseHeaders:
-            Headers = Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
+            Headers = UI.Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
 
             HasHeaders = Headers.Length != 0;
             if (Headers.StartsWith('~'))
@@ -68,7 +72,7 @@ namespace Methane.Toolkit
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    UI.LogError(ex);
                     goto ChooseHeaders;
                 }
             }
@@ -76,7 +80,7 @@ namespace Methane.Toolkit
 
             ChooseSavePath:
 
-            SavePath = Prompt("Enter path to save files or ~ to use  \"Downloaded/\" ");
+            SavePath = UI.Prompt("Enter path to save files or ~ to use  \"Downloaded/\" ");
             if (SavePath == "~") SavePath = "Downloaded/";
 
             try
@@ -89,21 +93,21 @@ namespace Methane.Toolkit
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                UI.LogError(ex);
                 goto ChooseSavePath;
             }
 
 
 
-            Log("Please use the following tool to create download url list");
-            csa = new CSA();
+           UI.Log("Please use the following tool to create download url list");
+            csa = new CSA(UI);
             csa.PromptParamenters();
 
 
             PromptHowManyThreads:
-            if (!int.TryParse(Prompt("How many threads to use?"), out AllowedThrds)) goto PromptHowManyThreads;
+            if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromptHowManyThreads;
 
-            Log("Rapid Downloader standby    :-) ");
+           UI.Log("Rapid Downloader standby    :-) ");
 
 
         }
@@ -112,16 +116,16 @@ namespace Methane.Toolkit
         public void Run()
         {
 
-            Log("");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("               Methane                  ");
-            Log("            Bulk HTTP Download          ");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("");
+           UI.Log("");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("               Methane                  ");
+           UI.Log("            Bulk HTTP Download          ");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("");
 
 
 
-            Log("Rapid Downloader Running...");
+           UI.Log("Rapid Downloader Running...");
 
 
             bodyPipeline = csa.RunIterator();
@@ -191,13 +195,13 @@ namespace Methane.Toolkit
                 fs.Dispose();
 
 
-                Log($"Downloaded \t {url} \t -> \t {file}");
+               UI.Log($"Downloaded \t {url} \t -> \t {file}");
 
 
             }
             catch (Exception ex)
             {
-                Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+               UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
             }
 
             goto bodyPipelineMoveNext;

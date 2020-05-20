@@ -2,6 +2,3 @@
 
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent
-
-# IDE0071WithoutSuggestion: Simplify interpolation
-dotnet_diagnostic.IDE0071WithoutSuggestion.severity = silent

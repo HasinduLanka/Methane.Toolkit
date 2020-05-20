@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using static Methane.Toolkit.Common;
 using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
@@ -11,7 +10,11 @@ namespace Methane.Toolkit
 {
     public class RapidGETer
     {
-
+        readonly UI UI;
+        public RapidGETer(UI ui)
+        {
+            UI = ui;
+        }
         public bool HasCookie = false;
         public bool HasHeaders = false;
         public string Cookie;
@@ -34,16 +37,16 @@ namespace Methane.Toolkit
         public void PromptParamenters()
         {
 
-            Log("");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("               Methane                  ");
-            Log("            Bulk HTTP GET               ");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("");
+           UI.Log("");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("               Methane                  ");
+           UI.Log("            Bulk HTTP GET               ");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("");
 
 
             ChooseCookies:
-            Cookie = Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
+            Cookie = UI.Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
             HasCookie = Cookie.Length > 0;
             if (Cookie.StartsWith('~'))
@@ -55,14 +58,14 @@ namespace Methane.Toolkit
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    UI.LogError(ex);
                     goto ChooseCookies;
                 }
             }
 
 
             ChooseHeaders:
-            Headers = Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
+            Headers = UI.Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
 
             HasHeaders = Headers.Length != 0;
             if (Headers.StartsWith('~'))
@@ -74,25 +77,25 @@ namespace Methane.Toolkit
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    UI.LogError(ex);
                     goto ChooseHeaders;
                 }
             }
 
-            findWith = Prompt("In a positive response, what text we would find? (Ex :- Wellcome) [or null]");
+            findWith = UI.Prompt("In a positive response, what text we would find? (Ex :- Wellcome) [or null]");
             hasFindWith = findWith.Length > 0;
-            findWithout = Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
+            findWithout = UI.Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
             hasFindWithout = findWithout.Length > 0;
 
-            Log("Please use the following tool to create GET url data string list");
-            csa = new CSA();
+           UI.Log("Please use the following tool to create GET url data string list");
+            csa = new CSA(UI);
             csa.PromptParamenters();
 
 
             PromtHowManyThreads:
-            if (!int.TryParse(Prompt("How many threads to use?"), out AllowedThrds)) goto PromtHowManyThreads;
+            if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromtHowManyThreads;
 
-            Log("Rapid GETer standby    :-) ");
+           UI.Log("Rapid GETer standby    :-) ");
 
 
 
@@ -104,16 +107,16 @@ namespace Methane.Toolkit
         public void Run()
         {
 
-            Log("");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("               Methane                  ");
-            Log("            Bulk HTTP GET              ");
-            Log("    . . . . . . . . . . . . . . . .  .  ");
-            Log("");
+           UI.Log("");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("               Methane                  ");
+           UI.Log("            Bulk HTTP GET              ");
+           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+           UI.Log("");
 
 
 
-            Log("Rapid GETer Running...");
+           UI.Log("Rapid GETer Running...");
 
 
             bodyPipeline = csa.RunIterator();
@@ -132,11 +135,11 @@ namespace Methane.Toolkit
 
             if (found)
             {
-                Prompt($"We found it!!! '{result}'     ________");
+                UI.Prompt($"We found it!!! '{result}'     ________");
             }
             else
             {
-                Prompt("I can't find it  :-(              ________");
+                UI.Prompt("I can't find it  :-(              ________");
             }
 
 
@@ -179,7 +182,7 @@ namespace Methane.Toolkit
 
                 if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
                 {
-                    Log($"We found it! '{url}' _______ :-) ________________________________");
+                   UI.Log($"We found it! '{url}' _______ :-) ________________________________");
                     found = true;
                     result = url;
 
@@ -187,13 +190,13 @@ namespace Methane.Toolkit
                 }
                 else
                 {
-                    Log($"{url} didn't work");
+                   UI.Log($"{url} didn't work");
                 }
 
             }
             catch (Exception ex)
             {
-                Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+               UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
             }
 
             goto bodyPipelineMoveNext;
@@ -213,12 +216,12 @@ namespace Methane.Toolkit
 
         //        if (resp.Contains("Incorrect Password"))
         //        {
-        //            Log($"Pass {pass} is wrong");
+        //           UI.Log($"Pass {pass} is wrong");
         //        }
         //        else
         //        {
         //            string l = $"Possitive response {pass} \n {resp} \n \n";
-        //            Log(l);
+        //           UI.Log(l);
         //            FoundPass = true;
         //            result = l;
         //            runningThreads--;

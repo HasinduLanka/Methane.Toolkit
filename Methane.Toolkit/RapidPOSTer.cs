@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using static Methane.Toolkit.Common;
 
 namespace Methane.Toolkit
 {
     public class RapidPOSTer
     {
 
+        readonly UI UI;
+        public RapidPOSTer(UI ui)
+        {
+            UI = ui;
+        }
 
         public string findWith;
         public bool hasFindWith;
@@ -34,16 +38,16 @@ namespace Methane.Toolkit
             found = false;
             runningThrds = 0;
 
-            Log("---------------------------------");
-            Log("|           Methane             |");
-            Log("|     Rapid HTTP Request        |");
-            Log("|           POSTer              |");
-            Log("---------------------------------");
+            UI.Log("---------------------------------");
+            UI.Log("|           Methane             |");
+            UI.Log("|     Rapid HTTP Request        |");
+            UI.Log("|           POSTer              |");
+            UI.Log("---------------------------------");
 
-            url = Prompt("Enter Request URL (Ex :- http://DamnWebSite.com/admin/userlogin.php ) : ");
+            url = UI.Prompt("Enter Request URL (Ex :- http://DamnWebSite.com/admin/userlogin.php ) : ");
 
             ChooseCookies:
-            Cookie = Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
+            Cookie = UI.Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
             HasCookie = Cookie.Length != 0;
             if (Cookie.StartsWith('~'))
@@ -55,13 +59,13 @@ namespace Methane.Toolkit
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    UI.LogError(ex);
                     goto ChooseCookies;
                 }
             }
 
             ChooseHeaders:
-            Headers = Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
+            Headers = UI.Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
 
             HasHeaders = Headers.Length != 0;
             if (Headers.StartsWith('~'))
@@ -73,26 +77,26 @@ namespace Methane.Toolkit
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    UI.LogError(ex);
                     goto ChooseHeaders;
                 }
             }
 
 
-            findWith = Prompt("In a positive response, what text we would find? (Ex :- Wellcome) [or null]");
+            findWith = UI.Prompt("In a positive response, what text we would find? (Ex :- Wellcome) [or null]");
             hasFindWith = findWith.Length != 0;
-            findWithout = Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
+            findWithout = UI.Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
             hasFindWithout = findWithout.Length != 0;
 
-            Log("Please use the following tool to create POST body data string list");
-            csa = new CSA();
+            UI.Log("Please use the following tool to create POST body data string list");
+            csa = new CSA(UI);
             csa.PromptParamenters();
 
 
             PromtHowManyThreads:
-            if (!int.TryParse(Prompt("How many threads to use?"), out AllowedThrds)) goto PromtHowManyThreads;
+            if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromtHowManyThreads;
 
-            Log("Rapid POSTer standby    :-) ");
+            UI.Log("Rapid POSTer standby    :-) ");
 
         }
 
@@ -102,7 +106,7 @@ namespace Methane.Toolkit
         {
 
 
-            Log("Rapid POSTer Running...");
+            UI.Log("Rapid POSTer Running...");
 
 
             bodyPipeline = csa.RunIterator();
@@ -121,11 +125,11 @@ namespace Methane.Toolkit
 
             if (found)
             {
-                Prompt($"We found it!!! '{foundPass}'     ________");
+                UI.Prompt($"We found it!!! '{foundPass}'     ________");
             }
             else
             {
-                Prompt("I can't find it  :-(              ________");
+                UI.Prompt("I can't find it  :-(              ________");
             }
 
             return foundPass;
@@ -168,7 +172,7 @@ namespace Methane.Toolkit
 
                 if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
                 {
-                    LogSpecial($"We found it! '{poststring}' _______ :-) ________________________________ \n Response : \n{resp} \n \n");
+                    UI.LogSpecial($"We found it! '{poststring}' _______ :-) ________________________________ \n Response : \n{resp} \n \n");
                     //found = true;
                     //foundPass = poststring;
 
@@ -176,18 +180,18 @@ namespace Methane.Toolkit
                 }
                 else
                 {
-                    Log($"{poststring} didn't work");
+                    UI.Log($"{poststring} didn't work");
                     Report++;
                     if (Report % 1000 == 0)
                     {
-                        Log($"Reporting Invalid Respose {resp}");
+                        UI.Log($"Reporting Invalid Respose {resp}");
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+                UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
             }
 
             goto bodyPipelineMoveNext;
