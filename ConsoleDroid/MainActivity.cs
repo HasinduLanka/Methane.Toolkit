@@ -57,7 +57,7 @@ namespace ConsoleDroid
             UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
 
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
-            p.Main(new string[] { "#", "bflg" }, ui);
+            p.Main(new string[] { "#|bflg|c|1|3|6|1" }, ui);
         }
 
 

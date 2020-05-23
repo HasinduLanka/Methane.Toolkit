@@ -47,7 +47,18 @@ namespace UniUI
         public void SwitchToCommands(string cmds)
         {
             UIFromCmds = true;
-            Commands = ReadLineByLine(cmds);
+
+
+            if (cmds.Length > 2 && cmds.StartsWith('#'))
+            {
+                Commands = ReadLinesSeperated(cmds, 2, cmds[1]);
+            }
+            else
+            {
+                Commands = ReadLineByLine(cmds);
+            }
+
+
         }
 
         private IEnumerator<string> ReadLineByLine(string cmds)
@@ -76,6 +87,26 @@ namespace UniUI
             if (last < cmds.Length)
                 yield return cmds[last..cmds.Length];
         }
+
+
+        private IEnumerator<string> ReadLinesSeperated(string cmds, int startFrom, char seperator)
+        {
+
+            int last = startFrom;
+            for (int n = startFrom; n < cmds.Length; n++)
+            {
+                char c = cmds[n];
+                if (c == seperator)
+                {
+                    yield return cmds[last..n];
+
+                    last = n + 1;
+                }
+            }
+            if (last < cmds.Length)
+                yield return cmds[last..cmds.Length];
+        }
+
 
         public void BeginUIRecord(string file)
         {

@@ -122,6 +122,7 @@ namespace ConsoleDroid
                 InputType = Android.Text.InputTypes.ClassText,
                 Focusable = true
             };
+
             promptA.SetBackgroundColor(BackColor);
             promptA.SetTextColor(Android.Graphics.Color.LightGoldenrodYellow);
             promptA.SetImeActionLabel("enter", Android.Views.InputMethods.ImeAction.Send);
@@ -159,7 +160,7 @@ namespace ConsoleDroid
             CoordinatorLayout.LayoutParams FABLayout = FAB.LayoutParameters as CoordinatorLayout.LayoutParams;
             FABLayout.Width = -2; FABLayout.Height = -2;
             FABLayout.SetMargins(160, 160, 20, 240);
-            FABLayout.Gravity = (int)(GravityFlags.Bottom | GravityFlags.End);
+            FABLayout.Gravity = (int)(GravityFlags.Center | GravityFlags.End);
             FAB.SetImageResource(Resource.Drawable.round_pause_circle_filled_24);
             FAB.Click += FabOnClick;
 
@@ -183,9 +184,11 @@ namespace ConsoleDroid
                 console.Text = s;
                 console.RefreshDrawableState();
                 //scrollView.ScrollTo(0, (int)((console.LineHeight + console.LineSpacingExtra) * (console.LineCount + 1)));
-                scrollView.FullScroll(FocusSearchDirection.Down);
+                // scrollView.FullScroll(FocusSearchDirection.Down);
 
             });
+
+            new System.Threading.Thread(FullScrollDownDelayed).Start();
         }
 
         public void SetStatus(string s)
@@ -269,21 +272,39 @@ namespace ConsoleDroid
             // Snackbar.Make(view, "Replace with your own action", Snackbar.LengthLong)
             //     .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
 
+            activity.RunOnUiThread(() =>
+            {
 
-            if (CLI.ToggleHold())
-            {
-                console.Focusable = true;
-                console.SetTextIsSelectable(true);
-                FAB.SetImageResource(Resource.Drawable.round_play_circle_filled_24);
-            }
-            else
-            {
-                console.SetTextIsSelectable(false);
-                console.Focusable = false;
-                FAB.SetImageResource(Resource.Drawable.round_pause_circle_filled_24);
-            }
+                if (CLI.ToggleHold())
+                {
+                    console.Focusable = true;
+                    console.SetTextIsSelectable(true);
+                    FAB.SetImageResource(Resource.Drawable.round_play_circle_filled_24);
+                }
+                else
+                {
+                    console.SetTextIsSelectable(false);
+                    console.Focusable = false;
+                    FAB.SetImageResource(Resource.Drawable.round_pause_circle_filled_24);
+                }
+
+                scrollView.FullScroll(FocusSearchDirection.Down);
+
+            });
+
+            new System.Threading.Thread(FullScrollDownDelayed).Start();
+
         }
 
+        private void FullScrollDownDelayed()
+        {
+            System.Threading.Thread.Sleep(600);
+            activity.RunOnUiThread(() =>
+            {
+                scrollView.FullScroll(FocusSearchDirection.Down);
+
+            });
+        }
 
         uint HeartBeats = 0;
         private void HeartBeat_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

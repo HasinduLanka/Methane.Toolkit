@@ -22,9 +22,9 @@ namespace Methane.Toolkit
 
             if (args != null && args.Length > 0)
             {
-                if (args[0] == "#")
+                if (args[0].StartsWith("#"))
                 {
-                    UI.SwitchToCommands(args[1] ?? "");
+                    UI.SwitchToCommands(args[0]);
                     Directory.CreateDirectory(workspacePath);
                     Environment.CurrentDirectory = workspacePath;
                 }
@@ -68,6 +68,7 @@ namespace Methane.Toolkit
             UI.Log("6.download \t RapidDownloader - HTTP Download in bulk");
             UI.Log("7.fileops \t RapidFileOps - Do file operations in bulk");
             UI.Log("GP. BulkGETPOST - Download, alt and POST form data. (Code it)");
+            UI.Log("t. Type and Run Recorded Command set in textbox");
             UI.Log("c. Run Command file");
             UI.Log("r. Record Command file");
             UI.Log("er. End Recording Command file");
@@ -114,6 +115,10 @@ namespace Methane.Toolkit
                 case "GP":
                     RunGETPOST();
                     break;
+
+                case "t":
+                    UI.SwitchToCommands(UI.Prompt("Type or Paste your command set here (Include seperator after #  Ex: #|bflg|c)"));
+                    goto ProgramBegin;
 
                 case "c":
                     UI.SwitchToCommandFile(UI.Prompt("Enter input command file name (nothing to use cmd.in)"));
