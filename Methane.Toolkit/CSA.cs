@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using UniUI;
 
 namespace Methane.Toolkit
 {
@@ -10,8 +11,8 @@ namespace Methane.Toolkit
     /// </summary>
     public class CSA
     {
-        readonly UI UI;
-        public CSA(UI ui)
+        readonly UniUI.IUniCLI UI;
+        public CSA(UniUI.IUniCLI ui)
         {
             UI = ui;
         }

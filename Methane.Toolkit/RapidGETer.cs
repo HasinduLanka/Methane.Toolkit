@@ -10,8 +10,8 @@ namespace Methane.Toolkit
 {
     public class RapidGETer
     {
-        readonly UI UI;
-        public RapidGETer(UI ui)
+        readonly UniUI.IUniCLI UI;
+        public RapidGETer(UniUI.IUniCLI ui)
         {
             UI = ui;
         }

@@ -8,8 +8,8 @@ namespace Methane.Toolkit
     public class RapidPOSTer
     {
 
-        readonly UI UI;
-        public RapidPOSTer(UI ui)
+        readonly UniUI.IUniCLI UI;
+        public RapidPOSTer(UniUI.IUniCLI ui)
         {
             UI = ui;
         }

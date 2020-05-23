@@ -4,7 +4,7 @@ using StringBuilder = System.Text.StringBuilder;
 
 namespace UniUI
 {
-    public class ConsoleUI : UniUI.IUniCLI
+    public class ManagedCLI : UniUI.IUniCLI
     {
 
         readonly Action<string> SetConsole;
@@ -22,9 +22,9 @@ namespace UniUI
         int DisplaySize = 0;
         string DisplayString = "";
 
-        readonly int MaxChunks, ChunkSize, MaxConsoleSize;
+        readonly int MaxChunks, ChunkSize, MaxConsoleSize, LinePenalty;
 
-        public ConsoleUI(Action<string> SetConsoleText, Action<string> setStatusText, Func<string, string> promptFunc, int maxChunks = 64, int chunkSize = 256)
+        public ManagedCLI(Action<string> SetConsoleText, Action<string> setStatusText, Func<string, string> promptFunc, int maxChunks = 64, int chunkSize = 256, int linePenalty = 10)
         {
             SetConsole = SetConsoleText;
             setStatus = setStatusText;
@@ -33,6 +33,7 @@ namespace UniUI
             MaxChunks = maxChunks;
             ChunkSize = chunkSize;
             MaxConsoleSize = MaxChunks * ChunkSize;
+            LinePenalty = linePenalty;
 
             Chunks = new string[maxChunks];
             ChunkSizes = new int[maxChunks];
@@ -41,14 +42,14 @@ namespace UniUI
 
         public void Log(string s)
         {
-            LogAppend(s + System.Environment.NewLine);
+            LogAppend(s + System.Environment.NewLine, 1);
         }
 
 
-        public void LogAppend(string s)
+        public void LogAppend(string s, int numberOfLines)
         {
 
-            int lineSize = s.Length;
+            int lineSize = s.Length + (LinePenalty * numberOfLines);
 
             lock (Display)
             {
@@ -58,9 +59,39 @@ namespace UniUI
                 Chunk.Append(s);
                 curChunkSize += lineSize;
 
+                if (curChunkSize > ChunkSize)
+                {
 
 
-                if (!LazyUpdating) new Thread(LazyUpdate) { Name = "DroidCLI Lazy Update" }.Start();
+                    Chunks[curChunkIndex] = Chunk.ToString();
+                    Chunk.Clear();
+
+
+                    ChunkSizes[curChunkIndex] = curChunkSize;
+
+                    curChunkIndex++;
+
+                    if (curChunkIndex == MaxChunks)
+                    {
+                        curChunkIndex = 0;
+                    }
+
+                    curChunkSize = 0;
+
+                    //DisplaySize -= ChunkSizes[curChunkIndex];
+                    ChunkSizes[curChunkIndex] = 0;
+                    Chunks[curChunkIndex] = "";
+                }
+
+                if (LazyUpdating)
+                {
+                    RectifyDisplay();
+                }
+                else
+                {
+                    new Thread(LazyUpdate) { Name = "DroidCLI Lazy Update" }.Start();
+
+                }
             }
         }
 
@@ -68,48 +99,64 @@ namespace UniUI
 
         private void RectifyDisplay()
         {
-            if (curChunkSize > ChunkSize)
-            {
-                Chunks[curChunkIndex] = Chunk.ToString();
-                ChunkSizes[curChunkIndex] = curChunkSize;
-
-                curChunkIndex++;
-
-                if (curChunkIndex == MaxChunks)
-                {
-                    curChunkIndex = 0;
-                }
-
-                Chunk.Clear();
-                curChunkSize = 0;
-
-                DisplaySize -= ChunkSizes[curChunkIndex];
-                ChunkSizes[curChunkIndex] = 0;
-                Chunks[curChunkIndex] = "";
-            }
 
 
 
             if (DisplaySize > MaxConsoleSize)
             {
-                Display.Clear();
-                GC.Collect();
-
-                for (int i = curChunkIndex + 1; i < MaxChunks; i++)
+                lock (Display)
                 {
-                    Display.Append(Chunks[i]);
+                    Display.Clear();
+                    DisplaySize = 0;
+
+                    for (int i = curChunkIndex + 1; i < MaxChunks; i++)
+                    {
+                        Display.Append(Chunks[i]);
+                        DisplaySize += ChunkSizes[i];
+                    }
+
+
+                    for (int i = 0; i < curChunkIndex; i++)
+                    {
+                        Display.Append(Chunks[i]);
+                        DisplaySize += ChunkSizes[i];
+                    }
+
                 }
-
-
-                for (int i = 0; i < curChunkIndex; i++)
-                {
-                    Display.Append(Chunks[i]);
-                }
-
-
             }
         }
 
+
+        bool LazyUpdating = false;
+        void LazyUpdate()
+        {
+            if (LazyUpdating) return;
+
+            LazyUpdating = true;
+
+            while (IsOnHold)
+            {
+                System.Threading.Thread.Sleep(200);
+            }
+
+
+            System.Threading.Thread.Sleep(500);
+
+
+
+
+            lock (Display)
+            {
+                DisplayString = Display.ToString();
+            }
+
+            SetConsole(DisplayString);
+
+
+
+            LazyUpdating = false;
+
+        }
         public void LogSpecial(string s)
         {
             Log("-_-_-_-_-_-_-_-\n" +
@@ -130,34 +177,6 @@ namespace UniUI
         public static string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }
 
 
-        bool LazyUpdating = false;
-        void LazyUpdate()
-        {
-            if (LazyUpdating) return;
-
-            LazyUpdating = true;
-
-            RectifyDisplay();
-            System.Threading.Thread.Sleep(500);
-
-            while (IsOnHold)
-            {
-                System.Threading.Thread.Sleep(200);
-            }
-
-            try
-            {
-                DisplayString = Display.ToString();
-                LazyUpdating = false;
-                SetConsole(DisplayString);
-
-            }
-            catch (System.Exception)
-            { }
-
-
-        }
-
 
         public string Prompt(string s)
         {
@@ -165,6 +184,7 @@ namespace UniUI
             string res = prompt(s);
             // Unhold();
             Log(s);
+            Log("\t\t>>> " + res);
             return res;
         }
 

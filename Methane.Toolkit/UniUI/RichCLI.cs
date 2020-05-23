@@ -4,27 +4,26 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
 
-namespace Methane.Toolkit
+namespace UniUI
 {
-    public class UI
+    public class RichCLI : UniUI.IUniCLI
     {
         public UniUI.IUniCLI CLI;
-        public UI(UniUI.IUniCLI cli)
+        public RichCLI(UniUI.IUniCLI cli)
         {
             CLI = cli;
         }
 
-        private bool UIFromFile = false;
+        private bool UIFromCmds = false;
         private bool UIRecord = false;
         private string UIRecordFile;
 
-        private FileLineReader fileLineReader;
         private IEnumerator<string> Commands;
 
 
         public void SwitchToCommandFile(string file)
         {
-            fileLineReader?.ReadFileLineByLine().Dispose();
+            // fileLineReader?.ReadFileLineByLine().Dispose();
 
 
             if (string.IsNullOrEmpty(file)) file = "cmd.in";
@@ -33,9 +32,9 @@ namespace Methane.Toolkit
 
             try
             {
-                fileLineReader = new FileLineReader(file);
+                FileLineReader fileLineReader = new FileLineReader(file);
                 Commands = fileLineReader.ReadFileLineByLine();
-                UIFromFile = true;
+                UIFromCmds = true;
 
                 LogSpecial("Switched to Command file " + file);
             }
@@ -43,6 +42,39 @@ namespace Methane.Toolkit
             {
                 LogError(ex, "cannot Switch to Command File Mode");
             }
+        }
+
+        public void SwitchToCommands(string cmds)
+        {
+            UIFromCmds = true;
+            Commands = ReadLineByLine(cmds);
+        }
+
+        private IEnumerator<string> ReadLineByLine(string cmds)
+        {
+
+
+            int last = 0;
+            for (int n = 0; n < cmds.Length; n++)
+            {
+                char c = cmds[n];
+                if (c == '\n')
+                {
+                    if (n > 0 && cmds[n - 1] == '\r')
+                    {
+                        yield return cmds[last..(n - 1)];
+                    }
+                    else
+                    {
+                        yield return cmds[last..n];
+                    }
+
+                    last = n + 1;
+
+                }
+            }
+            if (last < cmds.Length)
+                yield return cmds[last..cmds.Length];
         }
 
         public void BeginUIRecord(string file)
@@ -71,13 +103,14 @@ namespace Methane.Toolkit
 
         public string Prompt(string s)
         {
-            if (UIFromFile)
+            if (UIFromCmds)
             {
                 if (!Commands.MoveNext())
                 {
-                    Log(" ___ Command file is over... Switching back to Console mode ___ ");
+                    Log(" ___ Command set is over ___");
+                    Log("Switching back to Console mode");
                     Commands.Dispose();
-                    UIFromFile = false;
+                    UIFromCmds = false;
                     return Prompt(s);
                 }
 
@@ -106,6 +139,31 @@ namespace Methane.Toolkit
 
                 return ans;
             }
+        }
+
+        public void LogAppend(string s, int numberOfLines = 0)
+        {
+            CLI.LogAppend(s, numberOfLines);
+        }
+
+        public void SetStatus(string s)
+        {
+            CLI.SetStatus(s);
+        }
+
+        public void Clear()
+        {
+            CLI.Clear();
+        }
+
+        public void Hold()
+        {
+            CLI.Hold();
+        }
+
+        public void Unhold()
+        {
+            CLI.Unhold();
         }
 
         public string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }

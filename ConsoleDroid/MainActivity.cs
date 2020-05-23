@@ -17,12 +17,11 @@ using Xamarin.Essentials;
 namespace ConsoleDroid
 {
 
-    [Activity(Label = "Methane Toolkit", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
+    [Activity(Label = "Methane Toolkit", WindowSoftInputMode = SoftInput.AdjustResize, Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
         CoordinatorLayout CLIViewContainer;
-        public CLIView CLIView;
-        public Dictionary<int, SubProgram> Programs = new Dictionary<int, SubProgram>();
+        public CLIManager manager;
 
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -35,26 +34,17 @@ namespace ConsoleDroid
             CLIViewContainer = FindViewById<CoordinatorLayout>(Resource.Id.DroidCLIView);
 
             System.Environment.CurrentDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
-            AddCLI(0, AddNewMethaneToolKit);
-            //ShowCLI(0);
+
+            Dictionary<string, Action<object>> progs = new Dictionary<string, Action<object>>
+            {
+                { "Methane toolkit", AddNewMethaneToolKit },
+                { "Brute Force List Gen", AddNewMethaneToolKitBFLG }
+            };
+
+
+            manager = new CLIManager(this, CLIViewContainer, progs, ref BackPressed);
 
         }
-
-        public void AddCLI(int id, ParameterizedThreadStart prog)
-        {
-            RemoveCLI(id);
-
-
-            CLIView view = new CLIView(id, CLIViewContainer, this, CLIView.DefaultBackColor);
-            Thread thread = new Thread(new ParameterizedThreadStart(prog));
-
-            SubProgram program = new SubProgram() { view = view, Thread = thread };
-            Programs[id] = program;
-            program.Thread.Start(view.CLI);
-
-        }
-
-
         public static void AddNewMethaneToolKit(object uniUI)
         {
             UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
@@ -62,55 +52,26 @@ namespace ConsoleDroid
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
             p.Main(Array.Empty<string>(), ui);
         }
-
-        public void RemoveCLI(int id)
+        public static void AddNewMethaneToolKitBFLG(object uniUI)
         {
-            if (Programs.TryGetValue(id, out SubProgram old))
-            {
-                old.Terminate();
-                RunOnUiThread(() =>
-                {
-                    old.view.Parent.Visibility = ViewStates.Gone;
-                    old.view.Parent.Dispose();
-                });
-                Programs.Remove(id);
-            }
+            UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
+
+            Methane.Toolkit.Program p = new Methane.Toolkit.Program();
+            p.Main(new string[] { "#", "bflg" }, ui);
         }
 
-        public void ShowCLI(int id)
-        {
-            if (Programs.TryGetValue(id, out SubProgram prog))
-            {
 
-                RunOnUiThread(() =>
-            {
-                CLIViewContainer.AddView(prog.view.Parent);
-                prog.view.Parent.Visibility = ViewStates.Visible;
-            });
 
-            }
-
-        }
-
-        public void HideCLI(int id)
-        {
-            if (Programs.TryGetValue(id, out SubProgram prog))
-            {
-
-                RunOnUiThread(() =>
-                {
-                    CLIViewContainer.RemoveView(prog.view.Parent);
-                    prog.view.Parent.Visibility = ViewStates.Invisible;
-                });
-
-            }
-
-        }
-
+        public event Func<bool> BackPressed;
         public override void OnBackPressed()
         {
-            AddCLI(0, AddNewMethaneToolKit);
+            if (BackPressed())
+            {
+                base.OnBackPressed();
+            }
         }
+
+
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {

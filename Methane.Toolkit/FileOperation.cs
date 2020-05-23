@@ -11,8 +11,8 @@ namespace Methane.Toolkit
 {
     public class FileOperation
     {
-        readonly UI UI;
-        public FileOperation(UI ui)
+        readonly UniUI.IUniCLI UI;
+        public FileOperation(UniUI.IUniCLI ui)
         {
             UI = ui;
         }

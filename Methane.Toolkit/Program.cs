@@ -6,13 +6,13 @@ namespace Methane.Toolkit
 {
     public class Program
     {
-        public UI UI;
+        public UniUI.RichCLI UI;
 
 
         public string workspacePath = "workspace";
         public void Main(string[] args, UniUI.IUniCLI cli)
         {
-            UI = new UI(cli);
+            UI = new UniUI.RichCLI(cli);
 
 
             foreach (string arg in args)
@@ -22,7 +22,13 @@ namespace Methane.Toolkit
 
             if (args != null && args.Length > 0)
             {
-                if (File.Exists(args[0]))
+                if (args[0] == "#")
+                {
+                    UI.SwitchToCommands(args[1] ?? "");
+                    Directory.CreateDirectory(workspacePath);
+                    Environment.CurrentDirectory = workspacePath;
+                }
+                else if (File.Exists(args[0]))
                 {
                     UI.SwitchToCommandFile(args[0]);
                 }

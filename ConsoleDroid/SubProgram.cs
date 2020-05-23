@@ -14,8 +14,10 @@ namespace ConsoleDroid
 {
     public class SubProgram
     {
+        public string name;
         public CLIView view;
         public Thread Thread;
+        public Android.Graphics.Color Color;
 
         public void Terminate()
         {

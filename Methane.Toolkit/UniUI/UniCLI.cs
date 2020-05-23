@@ -5,7 +5,7 @@ namespace UniUI
     public interface IUniCLI
     {
         void Log(string s);
-        void LogAppend(string s);
+        void LogAppend(string s, int numberOfLines = 0);
         void LogSpecial(string s);
         void LogError(Exception ex, string Msg = "");
 

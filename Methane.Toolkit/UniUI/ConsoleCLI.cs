@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UniUI
 {
-    public class CommandLineUI : UniUI.IUniCLI
+    public class ConsoleCLI : UniUI.IUniCLI
     {
         public void Clear()
         {
@@ -17,10 +17,12 @@ namespace UniUI
         {
             Console.WriteLine(s);
         }
-        public void LogAppend(string s)
+
+        public void LogAppend(string s, int numberOfLines = 0)
         {
             Console.Write(s);
         }
+
 
         public string Prompt(string s)
         {
@@ -61,6 +63,7 @@ namespace UniUI
             Log(LogS);
             Console.ResetColor();
         }
+
 
         public static string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }
 
