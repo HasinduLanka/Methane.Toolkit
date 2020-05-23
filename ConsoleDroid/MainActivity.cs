@@ -38,7 +38,8 @@ namespace ConsoleDroid
             Dictionary<string, Action<object>> progs = new Dictionary<string, Action<object>>
             {
                 { "Methane toolkit", AddNewMethaneToolKit },
-                { "Brute Force List Gen", AddNewMethaneToolKitBFLG }
+                { "Speed Tester with BruteForce Gen", AddNewMethaneToolKitBFLGSpeedTest },
+                { "Methane Rapid Downloader", AddNewMethaneToolKitDownloader }
             };
 
 
@@ -52,14 +53,22 @@ namespace ConsoleDroid
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
             p.Main(Array.Empty<string>(), ui);
         }
-        public static void AddNewMethaneToolKitBFLG(object uniUI)
+
+        public static void AddNewMethaneToolKitBFLGSpeedTest(object uniUI)
         {
             UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
 
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
-            p.Main(new string[] { "#|bflg|c|1|3|6|1" }, ui);
+            p.Main(new string[] { "#|bflg|c|1|3|8|1" }, ui);
         }
 
+        public static void AddNewMethaneToolKitDownloader(object uniUI)
+        {
+            UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
+
+            Methane.Toolkit.Program p = new Methane.Toolkit.Program();
+            p.Main(new string[] { "#|download|||~|" }, ui);
+        }
 
 
         public event Func<bool> BackPressed;

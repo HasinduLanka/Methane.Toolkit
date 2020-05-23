@@ -131,7 +131,7 @@ namespace ConsoleDroid
                     pfl.SetBackgroundColor(prog.Value.Color);
                     flowLayout.AddView(pfl, new FlowLayout.LayoutParams(FlowLayout.LayoutParams.MatchParent, FlowLayout.LayoutParams.WrapContent));
 
-                    TextView pname = new TextView(activity) { Text = prog.Value.name + " " + prog.Key.ToString() };
+                    TextView pname = new TextView(activity) { Text = prog.Key.ToString() + ". " + prog.Value.name };
                     pfl.AddView(pname, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
 
 
