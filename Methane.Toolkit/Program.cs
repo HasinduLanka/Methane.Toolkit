@@ -5,7 +5,7 @@ using System.IO;
 namespace Methane.Toolkit
 {
     public class Program
-    {
+    { 
         public UniUI.RichCLI UI;
 
 
