@@ -29,18 +29,20 @@ namespace Methane.Toolkit
         public int runningThreads = 0;
         public int AllowedThrds;
 
+        public int RetryCount;
+
         public void PromptParamenters()
         {
 
-           UI.Log("");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("               Methane                  ");
-           UI.Log("            Bulk HTTP Download          ");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("            Bulk HTTP Download          ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
-            ChooseCookies:
+        ChooseCookies:
             Cookie = UI.Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
             HasCookie = Cookie.Length > 0;
@@ -59,7 +61,7 @@ namespace Methane.Toolkit
             }
 
 
-            ChooseHeaders:
+        ChooseHeaders:
             Headers = UI.Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
 
             HasHeaders = Headers.Length != 0;
@@ -78,7 +80,7 @@ namespace Methane.Toolkit
             }
 
 
-            ChooseSavePath:
+        ChooseSavePath:
 
             SavePath = UI.Prompt("Enter path to save files or ~ to use  \"Downloaded/\" ");
             if (SavePath == "~") SavePath = "Downloaded/";
@@ -99,15 +101,27 @@ namespace Methane.Toolkit
 
 
 
-           UI.Log("Please use the following tool to create download url list");
+            UI.Log("Please use the following tool to create download url list. \n"
+             + " File name suffixes can be inserted at the end of urls inside { }   Ex: http://example.com/file.zip{ABC}\n"
+             + "These downloaded files will be named like fileABC.zip   (Tip : use pipelines for suffixes) \n");
             csa = new CSA(UI);
             csa.PromptParamenters();
 
 
-            PromptHowManyThreads:
+        PromptHowManyThreads:
             if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromptHowManyThreads;
 
-           UI.Log("Rapid Downloader standby    :-) ");
+            PromptRetryCount:
+            if (int.TryParse(UI.Prompt("If failed on network issue, How many times to retry?"), out int retries))
+            {
+                RetryCount = retries;
+            }
+            else
+            {
+                goto PromptRetryCount;
+            }
+
+            UI.Log("Rapid Downloader standby    :-) ");
 
 
         }
@@ -116,16 +130,16 @@ namespace Methane.Toolkit
         public void Run()
         {
 
-           UI.Log("");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("               Methane                  ");
-           UI.Log("            Bulk HTTP Download          ");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("            Bulk HTTP Download          ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
 
-           UI.Log("Rapid Downloader Running...");
+            UI.Log("Rapid Downloader Running...");
 
 
             bodyPipeline = csa.RunIterator();
@@ -154,15 +168,15 @@ namespace Methane.Toolkit
 
             runningThreads++;
 
-            bodyPipelineMoveNext:
+        bodyPipelineMoveNext:
 
-            string url;
+            string pipeFeed;
 
             lock (bodyPipeline)
             {
                 if (bodyPipeline.MoveNext())
                 {
-                    url = bodyPipeline.Current;
+                    pipeFeed = bodyPipeline.Current;
                 }
                 else
                 {
@@ -171,8 +185,34 @@ namespace Methane.Toolkit
                 }
             }
 
+            string file ="";
+            string url ="";
+            int retry = RetryCount;
+
+        RetryDownload:
             try
             {
+                string filenameExt;
+                if (pipeFeed.EndsWith('}'))
+                {
+                    int BeginIndex = pipeFeed.LastIndexOf('{');
+                    if (BeginIndex == -1)
+                    {
+                        url = pipeFeed.TrimEnd('}');
+                        filenameExt = "";
+                    }
+                    else
+                    {
+                        url = pipeFeed.Substring(0, BeginIndex);
+                        filenameExt = pipeFeed.Substring(BeginIndex + 1, pipeFeed.Length - BeginIndex - 2);
+                    }
+                }
+                else
+                {
+                    url = pipeFeed;
+                    filenameExt = "";
+                }
+
                 Stream resp = GetStream(url);
 
                 int LastSlash = url.LastIndexOf('/') + 1;
@@ -188,20 +228,26 @@ namespace Methane.Toolkit
 
                 string filename = Path.GetFileNameWithoutExtension(url3);
                 string ext = Path.GetExtension(url3) ?? "";
-                string file = SavePath + filename + ext;
-               
+                file = SavePath + filename + filenameExt + ext;
+
                 FileStream fs = File.OpenWrite(file);
                 resp.CopyTo(fs);
                 fs.Dispose();
 
 
-               UI.Log($"Downloaded \t {url} \t -> \t {file}");
+                UI.Log($"Downloaded \t {url} \t -> \t {file}");
 
 
             }
             catch (Exception ex)
             {
-               UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+                UI.Log($"!!! Error {ex} - {ex.Message} {url} -> {file} \n @ {ex.StackTrace}");
+                retry--;
+                if (retry > 0)
+                {
+                    UI.Log("Retrying...");
+                    goto RetryDownload;
+                }
             }
 
             goto bodyPipelineMoveNext;
