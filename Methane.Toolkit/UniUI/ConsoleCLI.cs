@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UniUI
 {
-    public class ConsoleCLI : UniUI.IUniCLI
+    public class ConsoleCLI : UniUI.IUniUI
     {
         public void Clear()
         {

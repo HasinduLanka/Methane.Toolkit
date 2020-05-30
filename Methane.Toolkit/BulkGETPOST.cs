@@ -12,8 +12,8 @@ namespace Methane.Toolkit
 {
     public class BulkGETPOST
     {
-        readonly UniUI.IUniCLI UI;
-        public BulkGETPOST(UniUI.IUniCLI ui)
+        readonly UniUI.IUniUI UI;
+        public BulkGETPOST(UniUI.IUniUI ui)
         {
             UI = ui;
         }

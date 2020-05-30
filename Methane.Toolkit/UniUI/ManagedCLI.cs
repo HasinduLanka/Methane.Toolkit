@@ -4,7 +4,7 @@ using StringBuilder = System.Text.StringBuilder;
 
 namespace UniUI
 {
-    public class ManagedCLI : UniUI.IUniCLI
+    public class ManagedCLI : UniUI.IUniUI
     {
 
         readonly Action<string> SetConsole;

@@ -11,8 +11,8 @@ namespace Methane.Toolkit
 {
     public class RapidDownloader
     {
-        readonly UniUI.IUniCLI UI;
-        public RapidDownloader(UniUI.IUniCLI ui)
+        readonly UniUI.IUniUI UI;
+        public RapidDownloader(UniUI.IUniUI ui)
         {
             UI = ui;
         }

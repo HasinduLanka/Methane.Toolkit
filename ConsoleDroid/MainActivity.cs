@@ -48,7 +48,7 @@ namespace ConsoleDroid
         }
         public static void AddNewMethaneToolKit(object uniUI)
         {
-            UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
+            UniUI.IUniUI ui = (UniUI.IUniUI)uniUI;
 
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
             p.Main(Array.Empty<string>(), ui);
@@ -56,7 +56,7 @@ namespace ConsoleDroid
 
         public static void AddNewMethaneToolKitBFLGSpeedTest(object uniUI)
         {
-            UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
+            UniUI.IUniUI ui = (UniUI.IUniUI)uniUI;
 
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
             p.Main(new string[] { "#|bflg|c|1|3|8|1" }, ui);
@@ -64,7 +64,7 @@ namespace ConsoleDroid
 
         public static void AddNewMethaneToolKitDownloader(object uniUI)
         {
-            UniUI.IUniCLI ui = (UniUI.IUniCLI)uniUI;
+            UniUI.IUniUI ui = (UniUI.IUniUI)uniUI;
 
             Methane.Toolkit.Program p = new Methane.Toolkit.Program();
             p.Main(new string[] { "#|download|||~|" }, ui);

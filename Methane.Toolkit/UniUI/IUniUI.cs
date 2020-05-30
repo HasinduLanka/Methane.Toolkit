@@ -2,7 +2,7 @@
 
 namespace UniUI
 {
-    public interface IUniCLI
+    public interface IUniUI
     {
         void Log(string s);
         void LogAppend(string s, int numberOfLines = 0);

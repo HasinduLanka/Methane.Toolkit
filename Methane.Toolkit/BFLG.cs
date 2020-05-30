@@ -11,14 +11,14 @@ namespace Methane.Toolkit
 {
     public class BFLG
     {
-        readonly UniUI.IUniCLI UI;
-        public BFLG(UniUI.IUniCLI ui)
+        readonly UniUI.IUniUI UI;
+        public BFLG(UniUI.IUniUI ui)
         {
             UI = ui;
         }
 
 
-        public BFLG(int MIN, int MAX, string FAMILIESPROMPT, UniUI.IUniCLI ui, string FILENAME = "get")
+        public BFLG(int MIN, int MAX, string FAMILIESPROMPT, UniUI.IUniUI ui, string FILENAME = "get")
         {
             UI = ui;
             min = MIN;

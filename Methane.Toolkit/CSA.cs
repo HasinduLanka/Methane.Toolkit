@@ -11,8 +11,8 @@ namespace Methane.Toolkit
     /// </summary>
     public class CSA
     {
-        readonly UniUI.IUniCLI UI;
-        public CSA(UniUI.IUniCLI ui)
+        readonly UniUI.IUniUI UI;
+        public CSA(UniUI.IUniUI ui)
         {
             UI = ui;
         }

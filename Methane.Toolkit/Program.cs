@@ -10,7 +10,7 @@ namespace Methane.Toolkit
 
 
         public string workspacePath = "workspace";
-        public void Main(string[] args, UniUI.IUniCLI cli)
+        public void Main(string[] args, UniUI.IUniUI cli)
         {
             UI = new UniUI.RichCLI(cli);
 

@@ -6,10 +6,10 @@ using System.Text;
 
 namespace UniUI
 {
-    public class RichCLI : UniUI.IUniCLI
+    public class RichCLI : UniUI.IUniUI
     {
-        public UniUI.IUniCLI CLI;
-        public RichCLI(UniUI.IUniCLI cli)
+        public UniUI.IUniUI CLI;
+        public RichCLI(UniUI.IUniUI cli)
         {
             CLI = cli;
         }
