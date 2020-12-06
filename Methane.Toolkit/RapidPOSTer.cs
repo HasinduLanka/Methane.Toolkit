@@ -5,7 +5,7 @@ using System.Net;
 
 namespace Methane.Toolkit
 {
-    public class RapidPOSTer
+    public class RapidPOSTer : IWorker
     {
 
         readonly UniUI.IUniUI UI;
@@ -33,7 +33,7 @@ namespace Methane.Toolkit
         public string Cookie;
         public string Headers;
 
-        public void PromptParamenters()
+        public void PromptParameters()
         {
             found = false;
             runningThrds = 0;
@@ -46,7 +46,7 @@ namespace Methane.Toolkit
 
             url = UI.Prompt("Enter Request URL (Ex :- http://DamnWebSite.com/admin/userlogin.php ) : ");
 
-            ChooseCookies:
+        ChooseCookies:
             Cookie = UI.Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
             HasCookie = Cookie.Length != 0;
@@ -64,7 +64,7 @@ namespace Methane.Toolkit
                 }
             }
 
-            ChooseHeaders:
+        ChooseHeaders:
             Headers = UI.Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
 
             HasHeaders = Headers.Length != 0;
@@ -90,10 +90,10 @@ namespace Methane.Toolkit
 
             UI.Log("Please use the following tool to create POST body data string list");
             csa = new CSA(UI);
-            csa.PromptParamenters();
+            csa.PromptParameters();
 
 
-            PromtHowManyThreads:
+        PromtHowManyThreads:
             if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromtHowManyThreads;
 
             UI.Log("Rapid POSTer standby    :-) ");
@@ -138,6 +138,9 @@ namespace Methane.Toolkit
 
 
         int Report = 0;
+
+        public IWorkerType WorkerType => IWorkerType.Service;
+
         private void ThrLoop()
         {
 
@@ -145,7 +148,7 @@ namespace Methane.Toolkit
 
 
 
-            bodyPipelineMoveNext:
+        bodyPipelineMoveNext:
 
             if (found) { runningThrds--; return; }
 
@@ -237,6 +240,16 @@ namespace Methane.Toolkit
 
             string resp = sb.ToString();
             return resp;
+        }
+
+        public void BuildFromParameters()
+        {
+
+        }
+
+        public void RunService()
+        {
+            Run();
         }
     }
 }

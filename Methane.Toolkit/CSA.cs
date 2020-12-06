@@ -9,26 +9,31 @@ namespace Methane.Toolkit
     /// <summary>
     /// Complex String Assembler
     /// </summary>
-    public class CSA
+    public class CSA : IPipe
     {
+        //Remember to set this if you JSONCopy it
+        [NonSerialized]
         readonly UniUI.IUniUI UI;
         public CSA(UniUI.IUniUI ui)
         {
             UI = ui;
         }
 
+        public CSA()
+        {
+            UI = new UniUI.NoUI();
+        }
 
         bool UsePipes;
-        public List<BFLG> bflgs;
-        public List<FileLineReader> DicFiles;
-        public List<IEnumerator<string>> IncrementalInts;
+        public List<BFLG> bflgs { get; set; }
+        public List<FileLineReader> DicFiles { get; set; }
+        public List<IEnumerator<string>> IncrementalInts { get; set; }
 
-        string mask;
+        string mask { get; set; }
 
-        List<CSAFeed> Feeds;
+        List<CSAFeed> Feeds { get; set; }
 
-
-        public void PromptParamenters()
+        public void PromptParameters()
         {
             UI.Log("");
             UI.Log("    . . . . . . . . . . . . . . . .  .  ");
@@ -50,14 +55,14 @@ namespace Methane.Toolkit
                 {
                     bflgs = new List<BFLG>();
 
-                    SetupBFLG:
+                SetupBFLG:
                     try
                     {
                         UI.Log($"Creating BFLG *b{bflgs.Count}*");
 
                         BFLG bflg = new BFLG(UI);
-                        bflg.PrompParamenters();
-                        bflg.BuildFromParamenters();
+                        bflg.PromptParameters();
+                        bflg.BuildFromParameters();
 
                         bflgs.Add(bflg);
 
@@ -86,7 +91,7 @@ namespace Methane.Toolkit
                 {
                     DicFiles = new List<FileLineReader>();
 
-                    PromptFileName:
+                PromptFileName:
                     string DicFileName = UI.Prompt($"File feed *f{DicFiles.Count}*. Enter the filename to read : ");
 
                     if (File.Exists(DicFileName))
@@ -113,7 +118,7 @@ namespace Methane.Toolkit
                 {
                     IncrementalInts = new List<IEnumerator<string>>();
 
-                    PromptStart:
+                PromptStart:
 
                     UI.Log($"Creating Incremental Int pipeline *i{IncrementalInts.Count}*");
 
@@ -123,7 +128,7 @@ namespace Methane.Toolkit
                         goto PromptStart;
                     }
 
-                    PromptEnd:
+                PromptEnd:
                     if (!long.TryParse(UI.Prompt("Enter end integer (Inclusive)"), out long end))
                     {
                         UI.Log("Can't read");
@@ -147,15 +152,21 @@ namespace Methane.Toolkit
         }
 
 
+        public void BuildFromParameters()
+        {
 
+        }
+        public void RunService()
+        {
 
+        }
 
         public IEnumerator<string> RunIterator()
         {
-            return RunEnumerable().GetEnumerator();
+            return GenerateEnumerable().GetEnumerator();
 
         }
-        public IEnumerable<string> RunEnumerable()
+        public IEnumerable<string> GenerateEnumerable()
         {
 
             Run();
@@ -182,7 +193,7 @@ namespace Methane.Toolkit
             if (bflgs != null)
                 for (int nBFLG = 0; nBFLG < bflgs.Count; nBFLG++)
                 {
-                    Feeds.Add(new CSAFeed($"*b{nBFLG}*", bflgs[nBFLG].GenerateIterator()));
+                    Feeds.Add(new CSAFeed($"*b{nBFLG}*", bflgs[nBFLG].RunIterator()));
                 }
 
             if (IncrementalInts != null)
@@ -203,7 +214,7 @@ namespace Methane.Toolkit
             CSAFeed feed = Feeds[nFeed];
             var Pipe = feed.PipeCreator;
 
-            loop:
+        loop:
 
             if (Pipe.MoveNext())
             {
@@ -254,11 +265,18 @@ namespace Methane.Toolkit
 
 
 
+
+
+        public IWorkerType WorkerType => IWorkerType.PipeReusable;
+        public string JSONCopy()
+        {
+            return Core.ToJSON(this);
+        }
     }
     public class CSAFeed
     {
-        public string Mask;
-        public IEnumerator<string> PipeCreator;
+        public string Mask { get; set; }
+        public IEnumerator<string> PipeCreator { get; set; }
 
 
 
@@ -269,5 +287,8 @@ namespace Methane.Toolkit
             Mask = mask;
             PipeCreator = pipeCreator;
         }
+
+
     }
+
 }

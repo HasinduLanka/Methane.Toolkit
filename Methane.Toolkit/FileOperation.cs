@@ -9,14 +9,19 @@ using System.Resources;
 
 namespace Methane.Toolkit
 {
-    public class FileOperation
+    public class FileOperation : IWorker
     {
+        [NonSerialized]
         readonly UniUI.IUniUI UI;
         public FileOperation(UniUI.IUniUI ui)
         {
             UI = ui;
         }
 
+        public FileOperation()
+        {
+            UI = new UniUI.NoUI();
+        }
 
         public string OutputPath;
 
@@ -28,20 +33,21 @@ namespace Methane.Toolkit
         public int runningThreads = 0;
         public int AllowedThrds;
 
-        public void PromptParamenters()
+
+        public void PromptParameters()
         {
 
-           UI.Log("");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("               Methane                  ");
-           UI.Log("            Bulk File Operation         ");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("            Bulk File Operation         ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
 
 
-            ChooseOutputPath:
+        ChooseOutputPath:
 
             OutputPath = UI.Prompt("Enter output path (Directory) or ~ to use  \"Output/\" ");
             if (OutputPath == "~") OutputPath = "Output/";
@@ -63,19 +69,19 @@ namespace Methane.Toolkit
             bool AllowMultithreading = true;
             operations = new List<Action<string, string>>();
 
-           UI.Log("Please use the following tool to create File name list");
+            UI.Log("Please use the following tool to create File name list");
             csa = new CSA(UI);
-            csa.PromptParamenters();
+            csa.PromptParameters();
 
-            SelectOp:
-           UI.Log("\t \tFile operations are");
-           UI.Log("\t \t \t copy. Copy file");
-           UI.Log("\t \t \t move. Move file");
-           UI.Log("\t \t \t delete. Delete file");
-           UI.Log("\t \t \t mkdir. Create new Directory");
-           UI.Log("\t \t \t rmdir. Delete Directory with content");
-           UI.Log("\t \t \t merge. Merge files to create one file");
-           UI.Log("\t \t \t aes. Encrypt or Decrypt file AES");
+        SelectOp:
+            UI.Log("\t \tFile operations are");
+            UI.Log("\t \t \t copy. Copy file");
+            UI.Log("\t \t \t move. Move file");
+            UI.Log("\t \t \t delete. Delete file");
+            UI.Log("\t \t \t mkdir. Create new Directory");
+            UI.Log("\t \t \t rmdir. Delete Directory with content");
+            UI.Log("\t \t \t merge. Merge files to create one file");
+            UI.Log("\t \t \t aes. Encrypt or Decrypt file AES");
 
             string op = UI.Prompt("Enter Index of Operation to use");
 
@@ -87,7 +93,7 @@ namespace Methane.Toolkit
                     {
                         outpath += Path.GetFileName(infile);
                         File.Copy(infile, outpath, true);
-                       UI.Log("Copied " + infile + " -> " + outpath);
+                        UI.Log("Copied " + infile + " -> " + outpath);
                     }));
                     break;
                 case "move":
@@ -95,21 +101,21 @@ namespace Methane.Toolkit
                     {
                         outpath += Path.GetFileName(infile);
                         File.Move(infile, outpath);
-                       UI.Log("Moved " + infile + " -> " + outpath);
+                        UI.Log("Moved " + infile + " -> " + outpath);
                     }));
                     break;
                 case "delete":
                     operations.Add(new Action<string, string>((infile, outpath) =>
                     {
                         File.Delete(infile);
-                       UI.Log("Deleted " + infile);
+                        UI.Log("Deleted " + infile);
                     }));
                     break;
                 case "mkdir":
                     operations.Add(new Action<string, string>((infile, outpath) =>
                     {
                         Directory.CreateDirectory(infile);
-                       UI.Log("Created " + infile);
+                        UI.Log("Created " + infile);
                     }));
                     break;
 
@@ -117,7 +123,7 @@ namespace Methane.Toolkit
                     operations.Add(new Action<string, string>((infile, outpath) =>
                     {
                         Directory.Delete(infile, true);
-                       UI.Log("Deleted" + infile);
+                        UI.Log("Deleted" + infile);
                     }));
                     break;
 
@@ -142,7 +148,7 @@ namespace Methane.Toolkit
                         }
                         else
                         {
-                           UI.Log($"File not found  - {aesKey}");
+                            UI.Log($"File not found  - {aesKey}");
                             goto SelectOp;
                         }
                     }
@@ -171,7 +177,7 @@ namespace Methane.Toolkit
                         }
                         else
                         {
-                           UI.Log($"File not found  - {aesIV}");
+                            UI.Log($"File not found  - {aesIV}");
                             goto SelectOp;
                         }
                     }
@@ -196,7 +202,7 @@ namespace Methane.Toolkit
                                 try
                                 {
                                     File.WriteAllBytes(outpath, aes.Encrypt(File.ReadAllBytes(infile)));
-                                   UI.Log("Encrypted " + infile + " -> " + outpath);
+                                    UI.Log("Encrypted " + infile + " -> " + outpath);
                                 }
                                 catch (Exception ex)
                                 {
@@ -205,7 +211,7 @@ namespace Methane.Toolkit
                             }
                             else
                             {
-                               UI.Log($"File not found {infile}");
+                                UI.Log($"File not found {infile}");
                             }
                         }));
                     }
@@ -219,7 +225,7 @@ namespace Methane.Toolkit
                                 try
                                 {
                                     File.WriteAllBytes(outpath, aes.Decrypt(File.ReadAllBytes(infile)));
-                                   UI.Log("Decrypted " + infile + " -> " + outpath);
+                                    UI.Log("Decrypted " + infile + " -> " + outpath);
                                 }
                                 catch (Exception ex)
                                 {
@@ -228,7 +234,7 @@ namespace Methane.Toolkit
                             }
                             else
                             {
-                               UI.Log($"File not found {infile}");
+                                UI.Log($"File not found {infile}");
                             }
                         }));
                     }
@@ -247,43 +253,47 @@ namespace Methane.Toolkit
                             stream.Close();
                             ins.Close();
                         }
-                       UI.Log("Merge " + infile + " -> " + outpath);
+                        UI.Log("Merge " + infile + " -> " + outpath);
                     }));
                     break;
 
                 default:
-                   UI.Log("Invalid selection");
+                    UI.Log("Invalid selection");
                     goto SelectOp;
             }
 
             if (AllowMultithreading)
             {
-                PromptHowManyThreads:
+            PromptHowManyThreads:
                 if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromptHowManyThreads;
             }
             else
             {
                 AllowedThrds = 1;
             }
-           UI.Log("File operations standby    :-) ");
+            UI.Log("File operations standby    :-) ");
 
 
         }
 
-
-        public void Run()
+        public void BuildFromParameters()
         {
 
-           UI.Log("");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("               Methane                  ");
-           UI.Log("          Bulk File Operation           ");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("");
+        }
+
+        public void RunService()
+        {
+
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("          Bulk File Operation           ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
 
-           UI.Log("Bulk File Operations Running...");
+            UI.Log("Bulk File Operations Running...");
 
 
             bodyPipeline = csa.RunIterator();
@@ -308,7 +318,7 @@ namespace Methane.Toolkit
 
             runningThreads++;
 
-            bodyPipelineMoveNext:
+        bodyPipelineMoveNext:
 
             string input;
 
@@ -334,7 +344,7 @@ namespace Methane.Toolkit
             }
             catch (Exception ex)
             {
-               UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+                UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
             }
 
             goto bodyPipelineMoveNext;
@@ -362,6 +372,7 @@ namespace Methane.Toolkit
 
         }
 
+        IWorkerType IWorker.WorkerType => IWorkerType.ServiceReusable;
 
     }
 

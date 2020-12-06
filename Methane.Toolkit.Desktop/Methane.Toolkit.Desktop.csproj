@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <StartupObject>Methane.Toolkit.Desktop.Program</StartupObject>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Methane.Toolkit\Methane.Toolkit.csproj" />
   </ItemGroup>
-
+  
 </Project>

@@ -7,7 +7,7 @@ namespace UniUI
 {
     public class FileLineReader
     {
-        public string filename;
+        public string filename { get; set; }
         public IEnumerator<string> ReadFileLineByLine()
         {
 

@@ -8,7 +8,7 @@ using System.Net.Http;
 
 namespace Methane.Toolkit
 {
-    public class RapidGETer
+    public class RapidGETer : IWorker
     {
         readonly UniUI.IUniUI UI;
         public RapidGETer(UniUI.IUniUI ui)
@@ -34,18 +34,20 @@ namespace Methane.Toolkit
         public int runningThreads = 0;
         public int AllowedThrds;
 
-        public void PromptParamenters()
+        public IWorkerType WorkerType => IWorkerType.Service;
+
+        public void PromptParameters()
         {
 
-           UI.Log("");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("               Methane                  ");
-           UI.Log("            Bulk HTTP GET               ");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("            Bulk HTTP GET               ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
-            ChooseCookies:
+        ChooseCookies:
             Cookie = UI.Prompt("Enter cookies to use OR Enter ~filename to read cookies OR [Enter] not to use cookies");
 
             HasCookie = Cookie.Length > 0;
@@ -64,7 +66,7 @@ namespace Methane.Toolkit
             }
 
 
-            ChooseHeaders:
+        ChooseHeaders:
             Headers = UI.Prompt("Enter Headers to use OR Enter ~filename to read Headers OR [Enter] not to use Headers");
 
             HasHeaders = Headers.Length != 0;
@@ -87,15 +89,15 @@ namespace Methane.Toolkit
             findWithout = UI.Prompt("In a positive response, what text we won't find? (Ex :- Wrong password) [or null]");
             hasFindWithout = findWithout.Length > 0;
 
-           UI.Log("Please use the following tool to create GET url data string list");
+            UI.Log("Please use the following tool to create GET url data string list");
             csa = new CSA(UI);
-            csa.PromptParamenters();
+            csa.PromptParameters();
 
 
-            PromtHowManyThreads:
+        PromtHowManyThreads:
             if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromtHowManyThreads;
 
-           UI.Log("Rapid GETer standby    :-) ");
+            UI.Log("Rapid GETer standby    :-) ");
 
 
 
@@ -104,19 +106,19 @@ namespace Methane.Toolkit
         }
 
 
-        public void Run()
+        public void RunService()
         {
 
-           UI.Log("");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("               Methane                  ");
-           UI.Log("            Bulk HTTP GET              ");
-           UI.Log("    . . . . . . . . . . . . . . . .  .  ");
-           UI.Log("");
+            UI.Log("");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("               Methane                  ");
+            UI.Log("            Bulk HTTP GET              ");
+            UI.Log("    . . . . . . . . . . . . . . . .  .  ");
+            UI.Log("");
 
 
 
-           UI.Log("Rapid GETer Running...");
+            UI.Log("Rapid GETer Running...");
 
 
             bodyPipeline = csa.RunIterator();
@@ -155,7 +157,7 @@ namespace Methane.Toolkit
 
 
 
-            bodyPipelineMoveNext:
+        bodyPipelineMoveNext:
 
             if (found) { runningThreads--; return; }
 
@@ -182,7 +184,7 @@ namespace Methane.Toolkit
 
                 if ((hasFindWith && resp.Contains(findWith)) || (hasFindWithout && !resp.Contains(findWithout)))
                 {
-                   UI.Log($"We found it! '{url}' _______ :-) ________________________________");
+                    UI.Log($"We found it! '{url}' _______ :-) ________________________________");
                     found = true;
                     result = url;
 
@@ -190,13 +192,13 @@ namespace Methane.Toolkit
                 }
                 else
                 {
-                   UI.Log($"{url} didn't work");
+                    UI.Log($"{url} didn't work");
                 }
 
             }
             catch (Exception ex)
             {
-               UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
+                UI.Log($"!!! Error {ex} - {ex.Message} @ {ex.StackTrace}");
             }
 
             goto bodyPipelineMoveNext;
@@ -285,7 +287,14 @@ namespace Methane.Toolkit
             return doc;
         }
 
+       
 
+        public void BuildFromParameters()
+        {
+           
+        }
+
+     
     }
 
 }

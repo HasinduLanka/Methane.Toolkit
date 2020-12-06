@@ -9,9 +9,16 @@ using System.Text;
 
 namespace Methane.Toolkit
 {
-    public class BFLG
+    public class BFLG : IPipe
     {
+        //Remember to set this if you JSONCopy it
+        [NonSerialized]
         readonly UniUI.IUniUI UI;
+
+        public BFLG()
+        {
+            UI = new UniUI.NoUI();
+        }
         public BFLG(UniUI.IUniUI ui)
         {
             UI = ui;
@@ -27,28 +34,31 @@ namespace Methane.Toolkit
             FileName = FILENAME;
         }
 
-        public int min = 1;
-        public int max = 8;
-        public string familiesPrompt = "3";
-        public string FileName = null;
-        public bool UseFile = false;
-        public bool MultiThreaded = false;
+        public int min { get; set; } = 1;
+        public int max { get; set; } = 8;
+        public string familiesPrompt { get; set; } = "3";
+        public string FileName { get; set; } = null;
+        public bool UseFile { get; set; } = false;
+        public bool MultiThreaded { get; set; } = false;
 
-        public List<char> Chars = new List<char>();
+        public List<char> Chars { get; set; } = new List<char>();
+        [NonSerialized]
         public StreamWriter SW;
 
-        public string prefix = null;
-        public string sufix = null;
-        public bool hasSufix = false;
+        public string prefix { get; set; } = null;
+        public string sufix { get; set; } = null;
+        public bool hasSufix { get; set; } = false;
 
 
-        public System.Timers.Timer Tmr = new Timer(1000);
-        public Stopwatch stopwatch = new Stopwatch();
-        public bool needProgressReport = false;
+        [NonSerialized]
+        public System.Timers.Timer Tmr;
+        [NonSerialized]
+        public Stopwatch stopwatch;
+        public bool needProgressReport { get; set; } = false;
 
 
         // Public FS As FileStream
-        public void PrompParamenters()
+        public void PromptParameters()
         {
             UI.Log("");
             UI.Log("......................................");
@@ -75,7 +85,7 @@ namespace Methane.Toolkit
             {
                 FileName = UI.Prompt("Enter file name to save : ");
                 UI.Log($"Selected {Path.GetFullPath(FileName)}");
-                SW = new StreamWriter(FileName, false, System.Text.Encoding.UTF7);
+                SW = new StreamWriter(FileName, false, System.Text.Encoding.UTF8);
             }
 
             string thrChoice = UI.Prompt("How many threads to use? (Enter 0|1 for single threaded. Enter amount for multiple threads. (Default is 16 - multithreaded)");
@@ -102,9 +112,18 @@ namespace Methane.Toolkit
 
         }
 
-        public void BuildFromParamenters()
+        public void BuildFromParameters()
         {
+            Tmr = new Timer(1000);
+            stopwatch = new Stopwatch();
+
+            if (UseFile)
+            {
+                SW = new StreamWriter(FileName, false, System.Text.Encoding.UTF8);
+            }
+
             string[] families = familiesPrompt.Replace(" ", "").Split(",");
+            Chars = new List<char>();
 
             foreach (var family in families)
             {
@@ -189,6 +208,12 @@ namespace Methane.Toolkit
         public ulong total;
 
 
+        public void RunService()
+        {
+
+        }
+
+
 
         public void GenerateToFile()
         {
@@ -241,7 +266,7 @@ namespace Methane.Toolkit
 
 
 
-        public int nOfThreadsToUse = 32;
+        public int nOfThreadsToUse { get; set; } = 32;
         private int runningThreads = 0;
         private StreamWriter ThrdSW;
         private IEnumerator<string> ThrItr;
@@ -251,7 +276,7 @@ namespace Methane.Toolkit
             runningThreads = 0;
             ThrdSW = stream;
 
-            ThrItr = GenerateIterator();
+            ThrItr = RunIterator();
 
             for (int n = 0; n < nOfThreadsToUse; n++)
             {
@@ -281,16 +306,16 @@ namespace Methane.Toolkit
 
             while (true)
             {
-                //while (ThrLock)
-                //{
-                //    System.Threading.Thread.Sleep(1);
-                //}
+            //while (ThrLock)
+            //{
+            //    System.Threading.Thread.Sleep(1);
+            //}
 
-                //ThrLock = true;
+            //ThrLock = true;
 
-                //Log($"Thr {System.Threading.Thread.CurrentThread.Name} before lock");
+            //Log($"Thr {System.Threading.Thread.CurrentThread.Name} before lock");
 
-                CollectLines:
+            CollectLines:
 
 
                 lock (ThrItr)
@@ -353,7 +378,7 @@ namespace Methane.Toolkit
             }
 
 
-            saveAndEndVoid:
+        saveAndEndVoid:
 
             string s2 = sb.ToString();
             sb.Clear();
@@ -365,7 +390,7 @@ namespace Methane.Toolkit
 
 
 
-            endVoid:
+        endVoid:
 
             runningThreads--;
             UI.Log($"{nOfThreadsToUse - runningThreads} of {nOfThreadsToUse} threads completed");
@@ -376,7 +401,7 @@ namespace Methane.Toolkit
 
         ulong current;
 
-        public IEnumerator<string> GenerateIterator()
+        public IEnumerator<string> RunIterator()
         {
 
             var ChCount = Chars.Count;
@@ -511,6 +536,8 @@ namespace Methane.Toolkit
 
         private ulong lastCurrent = 0;
         private long lastMillies = 1;
+
+
         public void ProgressReport(object sender, ElapsedEventArgs e)
         {
 
@@ -540,5 +567,10 @@ namespace Methane.Toolkit
 
 
 
+        public IWorkerType WorkerType => IWorkerType.PipeReusable;
+        public string JSONCopy()
+        {
+            return Core.ToJSON(this);
+        }
     }
 }

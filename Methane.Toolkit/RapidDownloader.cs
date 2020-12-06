@@ -9,12 +9,18 @@ using System.Resources;
 
 namespace Methane.Toolkit
 {
-    public class RapidDownloader
+    public class RapidDownloader : IWorker
     {
+        [NonSerialized]
         readonly UniUI.IUniUI UI;
         public RapidDownloader(UniUI.IUniUI ui)
         {
             UI = ui;
+        }
+
+        public RapidDownloader()
+        {
+            UI = new UniUI.NoUI();
         }
 
         public bool HasCookie = false;
@@ -31,7 +37,8 @@ namespace Methane.Toolkit
 
         public int RetryCount;
 
-        public void PromptParamenters()
+
+        public void PromptParameters()
         {
 
             UI.Log("");
@@ -105,7 +112,7 @@ namespace Methane.Toolkit
              + " File name suffixes can be inserted at the end of urls inside { }   Ex: http://example.com/file.zip{ABC}\n"
              + "These downloaded files will be named like fileABC.zip   (Tip : use pipelines for suffixes) \n");
             csa = new CSA(UI);
-            csa.PromptParamenters();
+            csa.PromptParameters();
 
 
         PromptHowManyThreads:
@@ -126,8 +133,11 @@ namespace Methane.Toolkit
 
         }
 
+        public void BuildFromParameters()
+        { }
 
-        public void Run()
+
+        public void RunService()
         {
 
             UI.Log("");
@@ -185,8 +195,8 @@ namespace Methane.Toolkit
                 }
             }
 
-            string file ="";
-            string url ="";
+            string file = "";
+            string url = "";
             int retry = RetryCount;
 
         RetryDownload:
@@ -277,6 +287,14 @@ namespace Methane.Toolkit
 
 
 
+
+        public IWorkerType WorkerType => IWorkerType.Service;
+
+
+        public string JSONCopy()
+        {
+            return null;
+        }
     }
 
 }

@@ -5,7 +5,7 @@ using System.IO;
 namespace Methane.Toolkit
 {
     public class Program
-    { 
+    {
         public UniUI.RichCLI UI;
 
 
@@ -39,7 +39,7 @@ namespace Methane.Toolkit
                 Environment.CurrentDirectory = workspacePath;
             }
 
-            ProgramBegin:
+        ProgramBegin:
 
 
             UI.Log("              _ . _                ");
@@ -59,7 +59,8 @@ namespace Methane.Toolkit
             UI.Log("              _ . _                ");
             UI.Log("");
 
-            selectSubProgram:
+        selectSubProgram:
+            UI.Log("L.lab \t\t Enter Automation Lab");
             UI.Log("1.bfgl \t\t BFLG - BruteForce List Generator");
             UI.Log("2.csa \t\t CSA - Complex String Assembler");
             UI.Log("3.post \t\t RapidPOSTer - HTTP POST form data in bulk");
@@ -77,6 +78,11 @@ namespace Methane.Toolkit
 
             switch (subProgram.ToLower())
             {
+                case "l":
+                case "lab":
+                    RunLab();
+                    break;
+
                 case "1":
                 case "bflg":
                     RunBFLG();
@@ -139,10 +145,23 @@ namespace Methane.Toolkit
             }
 
 
-            if (UI.Prompt("Program End. Restart? [y]|[N]") != "y") return; ;
+            if (UI.Prompt("Program End. Restart? [y]|[N]") != "y") return; 
             goto ProgramBegin;
 
         }
+
+
+
+        private void RunLab()
+        {
+
+            Lab lab = new Lab(UI);
+            lab.PromptParameters();
+            lab.BuildFromParameters();
+            lab.RunService();
+        }
+
+
 
         private void RunBFLG()
         {
@@ -151,8 +170,8 @@ namespace Methane.Toolkit
                 UseFile = UI.Prompt("Write results to [C]onsole window or to a [f]ile").ToUpper() == "F"
             };
 
-            bfgl.PrompParamenters();
-            bfgl.BuildFromParamenters();
+            bfgl.PromptParameters();
+            bfgl.BuildFromParameters();
 
             if (bfgl.UseFile)
             {
@@ -170,9 +189,9 @@ namespace Methane.Toolkit
         private void RunCSA()
         {
             CSA csa = new CSA(UI);
-            csa.PromptParamenters();
+            csa.PromptParameters();
 
-            foreach (string s in csa.RunEnumerable())
+            foreach (string s in csa.GenerateEnumerable())
             {
                 UI.Log(s);
             }
@@ -181,28 +200,28 @@ namespace Methane.Toolkit
         private void RunRapidPOSTer()
         {
             RapidPOSTer poster = new RapidPOSTer(UI);
-            poster.PromptParamenters();
-            poster.Run();
+            poster.PromptParameters();
+            poster.RunService();
         }
 
         private void RunRapidGETer()
         {
             RapidGETer geter = new RapidGETer(UI);
-            geter.PromptParamenters();
-            geter.Run();
+            geter.PromptParameters();
+            geter.RunService();
         }
 
         private void RunRapidDownloader()
         {
             RapidDownloader downloader = new RapidDownloader(UI);
-            downloader.PromptParamenters();
-            downloader.Run();
+            downloader.PromptParameters();
+            downloader.RunService();
         }
         private void RunRapidFileOps()
         {
             FileOperation ops = new FileOperation(UI);
-            ops.PromptParamenters();
-            ops.Run();
+            ops.PromptParameters();
+            ops.RunService();
         }
 
         private void RunTestPOST()
@@ -215,7 +234,7 @@ namespace Methane.Toolkit
         private void RunGETPOST()
         {
             BulkGETPOST bgp = new BulkGETPOST(UI);
-            bgp.Run();
+            bgp.RunService();
         }
 
     }

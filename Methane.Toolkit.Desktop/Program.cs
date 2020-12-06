@@ -9,6 +9,6 @@ namespace Methane.Toolkit.Desktop
 
             Methane.Toolkit.Program program = new Toolkit.Program();
             program.Main(args, new UniUI.ConsoleCLI());
-        }
+        } 
     }
 }
