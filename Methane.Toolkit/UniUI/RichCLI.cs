@@ -197,8 +197,8 @@ namespace UniUI
             CLI.Unhold();
         }
 
-        public string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }
 
-        public Random random = new Random();
+        public ILab Lab { get => lab; set => lab = value; }
+        private ILab lab;
     }
 }

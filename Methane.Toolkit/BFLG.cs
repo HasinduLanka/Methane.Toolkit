@@ -6,14 +6,14 @@ using System.Timers;
 using System.Net;
 using System.Diagnostics;
 using System.Text;
+using UniUI;
 
 namespace Methane.Toolkit
 {
-    public class BFLG : IPipe
+    public class BFLG : UniUI.IPipe
     {
         //Remember to set this if you JSONCopy it
-        [NonSerialized]
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
 
         public BFLG()
         {

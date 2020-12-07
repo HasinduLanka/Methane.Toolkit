@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using UniUI;
 
 namespace Methane.Toolkit
 {
     public class RapidPOSTer : IWorker
     {
 
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
+
         public RapidPOSTer(UniUI.IUniUI ui)
         {
             UI = ui;
@@ -89,8 +91,12 @@ namespace Methane.Toolkit
             hasFindWithout = findWithout.Length != 0;
 
             UI.Log("Please use the following tool to create POST body data string list");
-            csa = new CSA(UI);
-            csa.PromptParameters();
+            csa = UI.Lab?.Request<CSA>();
+            if (csa == null)
+            {
+                csa = new CSA(UI);
+                csa.PromptParameters();
+            }
 
 
         PromtHowManyThreads:

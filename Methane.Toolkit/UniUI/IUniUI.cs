@@ -17,6 +17,10 @@ namespace UniUI
 
         void Hold();
         void Unhold();
+
+        ILab Lab { get; set; }
+
+
     }
 
     public class NoUI : IUniUI
@@ -61,6 +65,9 @@ namespace UniUI
         }
         public static string TimeStamp { get { return $"{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}:{DateTime.Now.Second:00)}.{DateTime.Now.Millisecond:00}"; } }
 
+        public ILab Lab { get => lab; set => lab = value; }
+        private ILab lab;
+
         public string Prompt(string s)
         {
             return "";
@@ -75,5 +82,11 @@ namespace UniUI
         {
 
         }
+    }
+
+
+    public interface IUniUIObject
+    {
+        public IUniUI UI { get; set; }
     }
 }

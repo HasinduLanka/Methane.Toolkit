@@ -6,13 +6,14 @@ using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
 using System.Resources;
+using UniUI;
 
 namespace Methane.Toolkit
 {
     public class RapidDownloader : IWorker
     {
-        [NonSerialized]
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
+
         public RapidDownloader(UniUI.IUniUI ui)
         {
             UI = ui;
@@ -111,8 +112,12 @@ namespace Methane.Toolkit
             UI.Log("Please use the following tool to create download url list. \n"
              + " File name suffixes can be inserted at the end of urls inside { }   Ex: http://example.com/file.zip{ABC}\n"
              + "These downloaded files will be named like fileABC.zip   (Tip : use pipelines for suffixes) \n");
-            csa = new CSA(UI);
-            csa.PromptParameters();
+            csa = UI.Lab?.Request<CSA>();
+            if (csa == null)
+            {
+                csa = new CSA(UI);
+                csa.PromptParameters();
+            }
 
 
         PromptHowManyThreads:

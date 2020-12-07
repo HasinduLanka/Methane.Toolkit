@@ -6,13 +6,13 @@ using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
 using System.Resources;
+using UniUI;
 
 namespace Methane.Toolkit
 {
     public class FileOperation : IWorker
     {
-        [NonSerialized]
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
         public FileOperation(UniUI.IUniUI ui)
         {
             UI = ui;
@@ -70,8 +70,14 @@ namespace Methane.Toolkit
             operations = new List<Action<string, string>>();
 
             UI.Log("Please use the following tool to create File name list");
-            csa = new CSA(UI);
-            csa.PromptParameters();
+
+            csa = UI.Lab?.Request<CSA>();
+            if (csa == null)
+            {
+                csa = new CSA(UI);
+                csa.PromptParameters();
+            }
+
 
         SelectOp:
             UI.Log("\t \tFile operations are");

@@ -12,8 +12,7 @@ namespace Methane.Toolkit
     public class CSA : IPipe
     {
         //Remember to set this if you JSONCopy it
-        [NonSerialized]
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
         public CSA(UniUI.IUniUI ui)
         {
             UI = ui;
@@ -60,13 +59,18 @@ namespace Methane.Toolkit
                     {
                         UI.Log($"Creating BFLG *b{bflgs.Count}*");
 
-                        BFLG bflg = new BFLG(UI);
-                        bflg.PromptParameters();
+                        BFLG bflg = UI.Lab?.Request<BFLG>();
+                        if (bflg == null)
+                        {
+                            bflg = new(UI);
+                            bflg.PromptParameters();
+                        }
+
                         bflg.BuildFromParameters();
 
                         bflgs.Add(bflg);
 
-                        if (UI.Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                        if (UI.Prompt("Add another BFLG? [y]|[N]").ToUpper() == "Y")
                         {
                             goto SetupBFLG;
                         }
@@ -98,7 +102,7 @@ namespace Methane.Toolkit
                     {
                         DicFiles.Add(new FileLineReader(DicFileName));
 
-                        if (UI.Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                        if (UI.Prompt("Add another Dictionary pipeline? [y]|[N]").ToUpper() == "Y")
                         {
                             goto PromptFileName;
                         }
@@ -137,7 +141,7 @@ namespace Methane.Toolkit
 
                     IncrementalInts.Add(IncrementalInt(start, end).GetEnumerator());
 
-                    if (UI.Prompt("Add another? [y]|[N]").ToUpper() == "Y")
+                    if (UI.Prompt("Add another Incremental Int pipeline? [y]|[N]").ToUpper() == "Y")
                     {
                         goto PromptStart;
                     }

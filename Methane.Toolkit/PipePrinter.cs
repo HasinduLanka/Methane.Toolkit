@@ -12,7 +12,7 @@ namespace Methane.Toolkit
 {
     public class PipePrinter : IWorker
     {
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
         public IWorkerType WorkerType => IWorkerType.Service;
 
         public IPipe Pipe { get; set; }
@@ -39,10 +39,36 @@ namespace Methane.Toolkit
 
         public void PromptParameters()
         {
-            BFLG b = new(UI);
-            b.PromptParameters();
+        PrompIndex:
+            string r = UI.Prompt("What you want to print? \n \t \t Enter [bflg] to BruteForce List OR [csa] to Assemble multiple pipes into a Complex String Assembler ").Trim().ToLower();
 
-            Pipe = b;
+            switch (r)
+            {
+                case "csa":
+                case "c":
+                    CSA c = UI.Lab?.Request<CSA>();
+                    if (c == null)
+                    {
+                        c = new(UI);
+                        c.PromptParameters();
+                    }
+                    Pipe = c;
+                    break;
+
+                case "bflg":
+                case "b":
+                    BFLG b = UI.Lab?.Request<BFLG>();
+                    if (b == null)
+                    {
+                        b = new(UI);
+                        b.PromptParameters();
+                    }
+                    Pipe = b;
+                    break;
+
+                default:
+                    goto PrompIndex;
+            }
 
 
         }

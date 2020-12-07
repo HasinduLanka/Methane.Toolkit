@@ -5,12 +5,14 @@ using System.Net;
 using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
+using UniUI;
 
 namespace Methane.Toolkit
 {
     public class RapidGETer : IWorker
     {
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
+
         public RapidGETer(UniUI.IUniUI ui)
         {
             UI = ui;
@@ -90,8 +92,12 @@ namespace Methane.Toolkit
             hasFindWithout = findWithout.Length > 0;
 
             UI.Log("Please use the following tool to create GET url data string list");
-            csa = new CSA(UI);
-            csa.PromptParameters();
+            csa = UI.Lab?.Request<CSA>();
+            if (csa == null)
+            {
+                csa = new CSA(UI);
+                csa.PromptParameters();
+            }
 
 
         PromtHowManyThreads:
@@ -287,14 +293,14 @@ namespace Methane.Toolkit
             return doc;
         }
 
-       
+
 
         public void BuildFromParameters()
         {
-           
+
         }
 
-     
+
     }
 
 }

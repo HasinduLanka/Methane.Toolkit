@@ -228,6 +228,8 @@ namespace UniUI
             setStatus(s);
         }
 
-
+        public ILab Lab { get => lab; set => lab = value; }
+        private ILab lab;
     }
+
 }

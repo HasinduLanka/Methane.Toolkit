@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using UniUI;
 
 namespace Methane.Toolkit
 {
 
-    public class Lab : IWorker
+    public class Lab : ILab
     {
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
 
         public List<WorkerContainer> Pipes { get; set; } = new List<WorkerContainer>();
         public List<WorkerContainer> Services { get; set; } = new List<WorkerContainer>();
-        public List<WorkerContainer> RWorkers { get; set; } = new List<WorkerContainer>();
+        // public List<WorkerContainer> RWorkers { get; set; } = new List<WorkerContainer>();
 
         public Lab()
         {
@@ -29,7 +30,10 @@ namespace Methane.Toolkit
 
         public void BuildFromParameters()
         {
-
+            if (UI != null)
+            {
+                UI.Lab = this;
+            }
         }
 
 
@@ -45,6 +49,10 @@ namespace Methane.Toolkit
 
         public void RunService()
         {
+            if (UI != null)
+            {
+                UI.Lab = this;
+            }
             ShowMenu();
         }
 
@@ -177,25 +185,45 @@ namespace Methane.Toolkit
         {
             if (Pipes.Count > 0)
             {
+                UI.Log("");
+                UI.Log("");
                 UI.Log($"{Pipes.Count} Pipes");
 
                 for (int i = 0; i < Pipes.Count; i++)
                 {
                     WorkerContainer iwc = Pipes[i];
-                    UI.Log($"{i}. {iwc.Name} \t \t {iwc.Worker?.WorkerType}");
+                    UI.Log($"{i}. {iwc.Name} \t \t {iwc.Worker?.WorkerType} {(iwc.Used ? " Used " : "")}");
                 }
 
             }
+
             if (Services.Count > 0)
             {
+                UI.Log("");
+                UI.Log("");
                 UI.Log($"{Services.Count} Services");
 
                 for (int i = 0; i < Services.Count; i++)
                 {
                     WorkerContainer iwc = Services[i];
-                    UI.Log($"{i}. {iwc.Name} \t \t {iwc.Worker?.WorkerType}");
+                    UI.Log($"{i}. {iwc.Name} \t \t {iwc.Worker?.WorkerType} {(iwc.Used ? " Used " : "")}");
                 }
             }
+
+            // if (RWorkers.Count > 0)
+            // {
+            //     UI.Log("");
+            //     UI.Log("");
+            //     UI.Log($"{RWorkers.Count} Reusable workers");
+
+            //     for (int i = 0; i < RWorkers.Count; i++)
+            //     {
+            //         WorkerContainer iwc = RWorkers[i];
+            //         UI.Log($"{i}. {iwc.Name} \t \t {iwc.Worker?.WorkerType}");
+            //     }
+            // }
+
+            UI.Log("");
 
             if (Services.Count == 0 && Pipes.Count == 0)
             {
@@ -217,12 +245,11 @@ namespace Methane.Toolkit
 
             if ((w.WorkerType & IWorkerType.Reusable) != 0)
             {
-                if (UI.Prompt($"Do you want to save this worker for multiple uses? [Y] [n]").ToLower() != "n")
-                {
-                    wc.Copy = Core.ToJSON(w);
-                    RWorkers.Add(wc);
-                    UI.Log($"Saved reusable {wc.Name}");
-                }
+
+                wc.Copy = Core.ToJSON(w);
+                // RWorkers.Add(wc);
+                UI.Log($"Saved reusable {wc.Name}");
+
             }
 
             if ((w.WorkerType & IWorkerType.Pipe) != 0)
@@ -240,13 +267,121 @@ namespace Methane.Toolkit
                 UI.LogError(new Exception(), $"{wc.Name} does not fall into either Pipe or Service");
             }
         }
+
+        public T Request<T>() where T : IWorker
+        {
+
+            List<WorkerContainer> Matches = new List<WorkerContainer>();
+
+            UI.Log("");
+            UI.Log("");
+            if (Pipes.Count > 0)
+            {
+                for (int i = 0; i < Pipes.Count; i++)
+                {
+                    WorkerContainer iwc = Pipes[i];
+                    if (iwc.Worker is T && (((iwc.Worker.WorkerType & IWorkerType.Reusable) != 0) || !iwc.Used))
+                    {
+                        int mi = Matches.Count;
+                        Matches.Add(iwc);
+                        UI.Log($"{mi}. {iwc.Name} \t \t {iwc.Worker?.WorkerType} ");
+                    }
+                }
+
+            }
+
+            int MatchedPipes = Matches.Count;
+
+
+
+            if (Services.Count > 0)
+            {
+                UI.Log("");
+
+                for (int i = 0; i < Services.Count; i++)
+                {
+                    WorkerContainer iwc = Services[i];
+                    if (iwc.Worker is T && (((iwc.Worker.WorkerType & IWorkerType.Reusable) != 0) || !iwc.Used))
+                    {
+                        int mi = Matches.Count;
+                        Matches.Add(iwc);
+                        UI.Log($"{i}. {iwc.Name} \t \t {iwc.Worker?.WorkerType} ");
+                    }
+                }
+            }
+
+
+            UI.Log("");
+
+            if (Matches.Count == 0)
+            {
+                return RequestNew<T>();
+            }
+            else
+            {
+            PrompIndex:
+                string r = UI.Prompt("[Enter] to create a new worker OR input index to use").Trim().ToLower();
+                if (string.IsNullOrEmpty(r))
+                {
+                    return RequestNew<T>();
+                }
+                else
+                {
+                    if (int.TryParse(r, out int ri) && ri < Matches.Count)
+                    {
+                        WorkerContainer workerContainer = Matches[ri];
+                        if ((workerContainer.Worker.WorkerType & IWorkerType.Reusable) == 0)
+                        {
+                            workerContainer.Used = true;
+
+                            Pipes.Remove(workerContainer);
+                            Services.Remove(workerContainer);
+
+                        }
+                        return (T)workerContainer.Worker;
+
+                    }
+                    else
+                    {
+                        UI.Log("What?");
+                        goto PrompIndex;
+                    }
+                }
+            }
+        }
+
+        public T RequestNew<T>() where T : IWorker
+        {
+            T w = Activator.CreateInstance<T>();
+            w.UI = UI;
+            AddWorker(w);
+
+            return w;
+
+        }
     }
 
 
     public class WorkerContainer
     {
+        private long hID { get; init; } = DateTime.Now.Ticks;
+        public bool Used { get; set; } = false;
         public IWorker Worker { get; set; }
         public string Name { get; set; }
         public string Copy { get; set; } = null;
+
+        public override bool Equals(object obj)
+        {
+            return obj is WorkerContainer container &&
+            hID == container.hID &&
+            EqualityComparer<IWorker>.Default.Equals(Worker, container.Worker) &&
+            Name == container.Name;
+
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(hID, Used, Worker, Name, Copy);
+        }
     }
 }

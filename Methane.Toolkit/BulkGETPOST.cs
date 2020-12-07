@@ -6,13 +6,14 @@ using System.Text;
 using HtmlAgilityPack;
 using System.Net.Http;
 using Methane.Toolkit;
+using UniUI;
 
 
 namespace Methane.Toolkit
 {
     public class BulkGETPOST : IWorker
     {
-        readonly UniUI.IUniUI UI;
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
         public BulkGETPOST(UniUI.IUniUI ui)
         {
             UI = ui;
