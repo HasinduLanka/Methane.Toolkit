@@ -145,7 +145,7 @@ namespace Methane.Toolkit
             }
 
 
-            if (UI.Prompt("Program End. Restart? [y]|[N]") != "y") return; 
+            if (UI.Prompt("Program End. Restart? [y]|[N]") != "y") return;
             goto ProgramBegin;
 
         }
@@ -190,6 +190,7 @@ namespace Methane.Toolkit
         {
             CSA csa = new CSA(UI);
             csa.PromptParameters();
+            csa.BuildFromParameters();
 
             foreach (string s in csa.GenerateEnumerable())
             {
@@ -201,6 +202,7 @@ namespace Methane.Toolkit
         {
             RapidPOSTer poster = new RapidPOSTer(UI);
             poster.PromptParameters();
+            poster.BuildFromParameters();
             poster.RunService();
         }
 
@@ -208,6 +210,7 @@ namespace Methane.Toolkit
         {
             RapidGETer geter = new RapidGETer(UI);
             geter.PromptParameters();
+            geter.BuildFromParameters();
             geter.RunService();
         }
 
@@ -215,12 +218,14 @@ namespace Methane.Toolkit
         {
             RapidDownloader downloader = new RapidDownloader(UI);
             downloader.PromptParameters();
+            downloader.BuildFromParameters();
             downloader.RunService();
         }
         private void RunRapidFileOps()
         {
             FileOperation ops = new FileOperation(UI);
             ops.PromptParameters();
+            ops.BuildFromParameters();
             ops.RunService();
         }
 

@@ -28,9 +28,10 @@ namespace Methane.Toolkit
         public List<FileLineReader> DicFiles { get; set; }
         public List<IEnumerator<string>> IncrementalInts { get; set; }
 
-        string mask { get; set; }
+        public string mask { get; set; }
 
-        List<CSAFeed> Feeds { get; set; }
+        public bool IsBuilt { get; set; }
+        public List<CSAFeed> Feeds { get; set; }
 
         public void PromptParameters()
         {
@@ -158,7 +159,11 @@ namespace Methane.Toolkit
 
         public void BuildFromParameters()
         {
-
+            if (!IsBuilt)
+            {
+                GenFeeds();
+                IsBuilt = true;
+            }
         }
         public void RunService()
         {
@@ -173,7 +178,6 @@ namespace Methane.Toolkit
         public IEnumerable<string> GenerateEnumerable()
         {
 
-            Run();
 
             string CMask = mask;
             if (Feeds.Count > 0)
@@ -183,7 +187,7 @@ namespace Methane.Toolkit
         }
 
 
-        private void Run()
+        private void GenFeeds()
         {
             Feeds = new List<CSAFeed>();
 

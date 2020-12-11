@@ -31,6 +31,8 @@ namespace UniUI
         public T RequestNew<T>() where T : IWorker;
     }
 
+   
+
     [Flags]
     public enum IWorkerType
     {

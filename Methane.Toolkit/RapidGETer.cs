@@ -112,6 +112,12 @@ namespace Methane.Toolkit
         }
 
 
+        public void BuildFromParameters()
+        {
+            csa.BuildFromParameters();
+        }
+
+
         public void RunService()
         {
 
@@ -295,10 +301,6 @@ namespace Methane.Toolkit
 
 
 
-        public void BuildFromParameters()
-        {
-
-        }
 
 
     }

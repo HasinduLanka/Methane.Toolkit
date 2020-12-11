@@ -119,6 +119,8 @@ namespace Methane.Toolkit
             UI.Log("5.get \t\t RapidGETer - HTTP GET in bulk");
             UI.Log("6.download \t RapidDownloader - HTTP Download in bulk");
             UI.Log("7.fileops \t RapidFileOps - Do file operations in bulk");
+            UI.Log("m3up \t M3U8 parser - Parse M3U8 files");
+            UI.Log("m3ud \t M3U8 Downloader - Download M3U8 files");
             UI.Log("GP. BulkGETPOST - Download, alt and POST form data. (Code it)");
             UI.Log("");
             UI.Log("");
@@ -166,6 +168,15 @@ namespace Methane.Toolkit
                 case "fileops":
                     AddWorker(new FileOperation(UI));
                     break;
+
+                case "m3ud":
+                    AddWorker(new M3U.M3UDownload(UI));
+                    break;
+
+                case "m3up":
+                    AddWorker(new M3U.M3UParser(UI));
+                    break;
+
 
                 case "GP":
                     AddWorker(new BulkGETPOST(UI));
@@ -384,4 +395,9 @@ namespace Methane.Toolkit
             return HashCode.Combine(hID, Used, Worker, Name, Copy);
         }
     }
+
+
+
+
+
 }

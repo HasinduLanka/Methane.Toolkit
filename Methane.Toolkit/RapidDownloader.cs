@@ -109,14 +109,17 @@ namespace Methane.Toolkit
 
 
 
-            UI.Log("Please use the following tool to create download url list. \n"
-             + " File name suffixes can be inserted at the end of urls inside { }   Ex: http://example.com/file.zip{ABC}\n"
-             + "These downloaded files will be named like fileABC.zip   (Tip : use pipelines for suffixes) \n");
-            csa = UI.Lab?.Request<CSA>();
             if (csa == null)
             {
-                csa = new CSA(UI);
-                csa.PromptParameters();
+                UI.Log("Please use the following tool to create download url list. \n"
+                 + " File name suffixes can be inserted at the end of urls inside { }   Ex: http://example.com/file.zip{ABC}\n"
+                 + "These downloaded files will be named like fileABC.zip   (Tip : use pipelines for suffixes) \n");
+                csa = UI.Lab?.Request<CSA>();
+                if (csa == null)
+                {
+                    csa = new CSA(UI);
+                    csa.PromptParameters();
+                }
             }
 
 
@@ -139,7 +142,9 @@ namespace Methane.Toolkit
         }
 
         public void BuildFromParameters()
-        { }
+        {
+            csa?.BuildFromParameters();
+        }
 
 
         public void RunService()
