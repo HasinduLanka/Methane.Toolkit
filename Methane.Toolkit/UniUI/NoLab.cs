@@ -45,6 +45,9 @@ namespace UniUI
             return w;
         }
 
+        public void RegisterReusableWorker<T>(T WOriginal, string Name) where T : IWorker
+        {
 
+        }
     }
 }

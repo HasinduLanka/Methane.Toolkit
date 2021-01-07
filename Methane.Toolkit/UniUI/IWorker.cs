@@ -29,9 +29,10 @@ namespace UniUI
     {
         public T Request<T>() where T : IWorker;
         public T RequestNew<T>() where T : IWorker;
+        public void RegisterReusableWorker<T>(T WOriginal, string Name) where T : IWorker;
     }
 
-   
+
 
     [Flags]
     public enum IWorkerType

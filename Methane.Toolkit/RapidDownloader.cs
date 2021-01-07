@@ -212,50 +212,23 @@ namespace Methane.Toolkit
         RetryDownload:
             try
             {
-                string filenameExt;
-                if (pipeFeed.EndsWith('}'))
-                {
-                    int BeginIndex = pipeFeed.LastIndexOf('{');
-                    if (BeginIndex == -1)
-                    {
-                        url = pipeFeed.TrimEnd('}');
-                        filenameExt = "";
-                    }
-                    else
-                    {
-                        url = pipeFeed.Substring(0, BeginIndex);
-                        filenameExt = pipeFeed.Substring(BeginIndex + 1, pipeFeed.Length - BeginIndex - 2);
-                    }
-                }
-                else
-                {
-                    url = pipeFeed;
-                    filenameExt = "";
-                }
 
-                Stream resp = GetStream(url);
 
-                int LastSlash = url.LastIndexOf('/') + 1;
-                if (LastSlash == url.Length) LastSlash--;
-                string url2 = url.Substring(LastSlash);
+                url = pipeFeed;
 
-                int Q = url2.IndexOf('?') + 1;
-                if (Q == 0) Q = url2.Length;
 
-                string url3;
-                if (url2.Length == 0) url3 = "DownloadedFile";
-                else url3 = url2.Substring(0, Q);
 
-                string filename = Path.GetFileNameWithoutExtension(url3);
-                string ext = Path.GetExtension(url3) ?? "";
-                file = SavePath + filename + filenameExt + ext;
+                string urle = System.Web.HttpUtility.UrlPathEncode(url);
+                Stream resp = GetStream(urle);
+
+                file = SavePath + URLToFileName(url);
 
                 FileStream fs = File.OpenWrite(file);
                 resp.CopyTo(fs);
                 fs.Dispose();
 
 
-                UI.Log($"Downloaded \t {url} \t -> \t {file}");
+                UI.Log($"Downloaded \t {urle} \t -> \t {file}");
 
 
             }
@@ -277,6 +250,36 @@ namespace Methane.Toolkit
 
         }
 
+        public static string URLToFileName(string url)
+        {
+            string file;
+            int LastSlash = url.LastIndexOf('/') + 1;
+            if (LastSlash == url.Length) LastSlash--;
+            string url2 = url.Substring(LastSlash);
+
+            int Q = url2.IndexOf('?') + 1;
+            if (Q == 0) Q = url2.Length;
+
+            string url3;
+            if (url2.Length == 0) url3 = "DownloadedFile";
+            else url3 = url2.Substring(0, Q);
+
+            string filename = Path.GetFileNameWithoutExtension(url3);
+
+
+            if (filename.Length > 20)
+            {
+                string filename1 = filename.Substring(filename.Length - 10);
+                string filename2 = filename.Substring(0, 10);
+                filename = filename2 + filename1;
+            }
+
+            string ext = Path.GetExtension(url3) ?? "";
+            file = filename + ext;
+            return file;
+        }
+
+        
 
         public static Stream GetStream(string url, string Cookie = "", string Headers = "")
         {

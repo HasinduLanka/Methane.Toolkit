@@ -140,7 +140,16 @@ namespace Methane.Toolkit
                         goto PromptEnd;
                     }
 
-                    IncrementalInts.Add(IncrementalInt(start, end).GetEnumerator());
+                PromptLength:
+                    if (!int.TryParse(UI.Prompt("Enter the fixed length which output string should be. Enter 0 for the string to variable length. (Ex: Enter 4 to get outputs like 0012 or enter 0 to get 12) "), out int length))
+                    {
+                        UI.Log("Can't read");
+                        goto PromptLength;
+                    }
+
+
+
+                    IncrementalInts.Add(IncrementalInt(start, end, length).GetEnumerator());
 
                     if (UI.Prompt("Add another Incremental Int pipeline? [y]|[N]").ToUpper() == "Y")
                     {
@@ -262,12 +271,14 @@ namespace Methane.Toolkit
 
         }
 
-        public static IEnumerable<string> IncrementalInt(long start, long end)
+        public static IEnumerable<string> IncrementalInt(long start, long end, int length)
         {
             end++;
+
+
             for (long i = start; i < end; i++)
             {
-                yield return i.ToString();
+                yield return i.ToString().PadLeft(length, '0');
             }
         }
 

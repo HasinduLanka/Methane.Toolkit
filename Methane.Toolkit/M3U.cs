@@ -205,6 +205,9 @@ namespace Methane.Toolkit.M3U
                     CSAFeed cf = new CSAFeed("*chunk*", ChunksEnumerable().GetEnumerator());
                     csa.Feeds = new List<CSAFeed>() { cf };
                     csa.IsBuilt = true;
+
+                    //TODO: RegisterReusableWorker
+                    // UI?.Lab?.RegisterReusableWorker(csa, $"CSA for M3U downloader {csa.mask}");
                     return (true, csa);
                 }
 
@@ -230,7 +233,8 @@ namespace Methane.Toolkit.M3U
                 csa.Feeds = new List<CSAFeed>() { cf };
                 csa.IsBuilt = true;
 
-
+            //TODO: RegisterReusableWorker
+            // UI?.Lab?.RegisterReusableWorker(csa, $"CSA for M3U downloader {csa.mask}");
 
             GetMask:
                 csa.mask = UI.Prompt($"Enter URL Mask string. (substitute : *chunk* to replace the chunk URL) (Ex: https://example.com/chunks/*chunk*  will turn into https://example.com/chunks/{cu})");

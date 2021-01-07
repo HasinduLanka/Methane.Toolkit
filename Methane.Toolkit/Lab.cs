@@ -253,7 +253,11 @@ namespace Methane.Toolkit
 
             w.PromptParameters();
 
+            RegisterWorkerToWC(w, wc);
+        }
 
+        private void RegisterWorkerToWC<T>(T w, WorkerContainer wc) where T : IWorker
+        {
             if ((w.WorkerType & IWorkerType.Reusable) != 0)
             {
 
@@ -369,6 +373,21 @@ namespace Methane.Toolkit
 
             return w;
 
+        }
+
+        public void RegisterReusableWorker<T>(T WOriginal, string Name) where T : IWorker
+        {
+
+            IWorker w = Core.FromJSON<T>(Core.ToJSON(WOriginal));
+            w.UI = UI;
+
+            WorkerContainer wc = new WorkerContainer();
+            wc.Name = $"{w.ToString()}";
+            wc.Worker = w;
+
+            UI.Log($"Creating {wc.Name}");
+
+            RegisterWorkerToWC(w, wc);
         }
     }
 
