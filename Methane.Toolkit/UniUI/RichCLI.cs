@@ -32,8 +32,8 @@ namespace UniUI
 
             try
             {
-                FileLineReader fileLineReader = new FileLineReader(file);
-                Commands = fileLineReader.ReadFileLineByLine();
+                FileLineReader fileLineReader = new FileLineReader(file , this);
+                Commands = fileLineReader.RunIterator();
                 UIFromCmds = true;
 
                 LogSpecial("Switched to Command file " + file);

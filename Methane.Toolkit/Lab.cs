@@ -123,9 +123,9 @@ namespace Methane.Toolkit
             UI.Log("m3ud \t M3U8 Downloader - Download M3U8 files");
             UI.Log("GP. BulkGETPOST - Download, alt and POST form data. (Code it)");
             UI.Log("");
-            UI.Log("");
+            UI.Log("[Enter] for previous menu");
 
-        selectSubProgram:
+        
 
             string subProgram = UI.Prompt("Enter Index to start ");
 
@@ -184,7 +184,7 @@ namespace Methane.Toolkit
 
 
                 default:
-                    goto selectSubProgram;
+                    return;
 
             }
 

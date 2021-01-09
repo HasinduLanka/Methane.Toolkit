@@ -30,7 +30,7 @@ namespace Methane.Toolkit
         public string Headers;
         public string SavePath;
 
-        public CSA csa;
+        public IPipe csa;
         IEnumerator<string> bodyPipeline;
 
         public int runningThreads = 0;

@@ -26,11 +26,12 @@ namespace Methane.Toolkit
         bool UsePipes;
         public List<BFLG> bflgs { get; set; }
         public List<FileLineReader> DicFiles { get; set; }
-        public List<IEnumerator<string>> IncrementalInts { get; set; }
+        public List<IncrementalIntGen> IncrementalInts { get; set; }
 
         public string mask { get; set; }
 
         public bool IsBuilt { get; set; }
+
         public List<CSAFeed> Feeds { get; set; }
 
         public void PromptParameters()
@@ -97,22 +98,17 @@ namespace Methane.Toolkit
                     DicFiles = new List<FileLineReader>();
 
                 PromptFileName:
-                    string DicFileName = UI.Prompt($"File feed *f{DicFiles.Count}*. Enter the filename to read : ");
 
-                    if (File.Exists(DicFileName))
-                    {
-                        DicFiles.Add(new FileLineReader(DicFileName));
+                    UI.Log($"File feed *f{DicFiles.Count}*");
+                    FileLineReader FLR = new FileLineReader(UI);
+                    FLR.PromptParameters();
+                    DicFiles.Add(FLR);
 
-                        if (UI.Prompt("Add another Dictionary pipeline? [y]|[N]").ToUpper() == "Y")
-                        {
-                            goto PromptFileName;
-                        }
-                    }
-                    else
+                    if (UI.Prompt("Add another Dictionary pipeline? [y]|[N]").ToUpper() == "Y")
                     {
-                        if (UI.Prompt("That file does not exist. Try again? [y]|[N]").ToUpper() == "Y")
-                            goto PromptFileName;
+                        goto PromptFileName;
                     }
+
 
                     UI.Log($"{DicFiles.Count} Files ready");
                 }
@@ -121,35 +117,14 @@ namespace Methane.Toolkit
                 IncrementalInts = null;
                 if (UI.Prompt("Add Incremental 64bit Integer pipelines?  [y|N]").ToUpper() == "Y")
                 {
-                    IncrementalInts = new List<IEnumerator<string>>();
+                    IncrementalInts = new List<IncrementalIntGen>();
 
                 PromptStart:
-
                     UI.Log($"Creating Incremental Int pipeline *i{IncrementalInts.Count}*");
 
-                    if (!long.TryParse(UI.Prompt("Enter start integer"), out long start))
-                    {
-                        UI.Log("Can't read");
-                        goto PromptStart;
-                    }
-
-                PromptEnd:
-                    if (!long.TryParse(UI.Prompt("Enter end integer (Inclusive)"), out long end))
-                    {
-                        UI.Log("Can't read");
-                        goto PromptEnd;
-                    }
-
-                PromptLength:
-                    if (!int.TryParse(UI.Prompt("Enter the fixed length which output string should be. Enter 0 for the string to variable length. (Ex: Enter 4 to get outputs like 0012 or enter 0 to get 12) "), out int length))
-                    {
-                        UI.Log("Can't read");
-                        goto PromptLength;
-                    }
-
-
-
-                    IncrementalInts.Add(IncrementalInt(start, end, length).GetEnumerator());
+                    IncrementalIntGen IIG = new IncrementalIntGen(UI);
+                    IIG.PromptParameters();
+                    IncrementalInts.Add(IIG);
 
                     if (UI.Prompt("Add another Incremental Int pipeline? [y]|[N]").ToUpper() == "Y")
                     {
@@ -171,6 +146,7 @@ namespace Methane.Toolkit
             if (!IsBuilt)
             {
                 GenFeeds();
+
                 IsBuilt = true;
             }
         }
@@ -204,13 +180,13 @@ namespace Methane.Toolkit
                 for (int nfile = 0; nfile < DicFiles.Count; nfile++)
                 {
 
-                    Feeds.Add(new CSAFeed($"*f{nfile}*", DicFiles[nfile].ReadFileLineByLine()));
+                    Feeds.Add(new CSAFeed($"*f{nfile}*", DicFiles[nfile]));
                 }
 
             if (bflgs != null)
                 for (int nBFLG = 0; nBFLG < bflgs.Count; nBFLG++)
                 {
-                    Feeds.Add(new CSAFeed($"*b{nBFLG}*", bflgs[nBFLG].RunIterator()));
+                    Feeds.Add(new CSAFeed($"*b{nBFLG}*", bflgs[nBFLG]));
                 }
 
             if (IncrementalInts != null)
@@ -229,7 +205,7 @@ namespace Methane.Toolkit
         private IEnumerable<string> ReOccuringFeedHierachy(int nFeed, string UpMask)
         {
             CSAFeed feed = Feeds[nFeed];
-            var Pipe = feed.PipeCreator;
+            var Pipe = feed.Pipe.RunIterator();
 
         loop:
 
@@ -255,15 +231,18 @@ namespace Methane.Toolkit
             }
             else
             {
-                if (nFeed != 0)
-                {
-                    yield break;
-                }
-                else
-                {
-                    //End of Top Feed
-                    yield break;
-                }
+                yield break;
+                // if (nFeed != 0)
+                // {
+                //     // yield return UpMask;
+                //     yield break;
+
+                // }
+                // else
+                // {
+                //     //End of Top Feed
+                //     yield break;
+                // }
             }
 
 
@@ -271,16 +250,6 @@ namespace Methane.Toolkit
 
         }
 
-        public static IEnumerable<string> IncrementalInt(long start, long end, int length)
-        {
-            end++;
-
-
-            for (long i = start; i < end; i++)
-            {
-                yield return i.ToString().PadLeft(length, '0');
-            }
-        }
 
 
 
@@ -292,19 +261,26 @@ namespace Methane.Toolkit
             return Core.ToJSON(this);
         }
     }
+
+
+
+
+
+
     public class CSAFeed
     {
         public string Mask { get; set; }
-        public IEnumerator<string> PipeCreator { get; set; }
+        // public IEnumerator<string> PipeCreator { get; set; }
+        public IPipe Pipe { get; set; }
 
 
 
         public CSAFeed() { }
 
-        public CSAFeed(string mask, IEnumerator<string> pipeCreator)
+        public CSAFeed(string mask, IPipe pipeCreator)
         {
             Mask = mask;
-            PipeCreator = pipeCreator;
+            Pipe = pipeCreator;
         }
 
 

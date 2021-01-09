@@ -43,7 +43,7 @@ namespace Methane.Toolkit.M3U
             P.PromptParameters();
 
             RD = new RapidDownloader(UI);
-            RD.csa = P.csa;
+            RD.csa = P.Pp;
             RD.PromptParameters();
 
 
@@ -72,7 +72,7 @@ namespace Methane.Toolkit.M3U
 
 
         public M3U m3U;
-        public CSA csa;
+        public IPipe Pp;
 
 
         public M3UParser()
@@ -142,7 +142,7 @@ namespace Methane.Toolkit.M3U
             var p = m3U.GetCSA(UI);
             if (p.Item1)
             {
-                csa = p.Item2;
+                Pp = p.Item2;
             }
             else
             {
@@ -152,27 +152,27 @@ namespace Methane.Toolkit.M3U
         public void BuildFromParameters()
         {
             //Do not Build CSA. It's a custom build
-            csa.IsBuilt = true;
+            // Pp.IsBuilt = true;
         }
 
         public void RunService()
         {
             //Not neccesory
-            csa.RunService();
+            Pp.RunService();
         }
 
         public IEnumerator<string> RunIterator()
         {
-            return csa.RunIterator();
+            return Pp.RunIterator();
         }
 
         public IEnumerable<string> GenerateEnumerable()
         {
-            return csa.GenerateEnumerable();
+            return Pp.GenerateEnumerable();
         }
     }
 
-    public class M3U
+    public class M3U : IPipe
     {
         public string TargetDuration { get; private set; }
         public bool AllowCache { get; private set; }
@@ -183,9 +183,11 @@ namespace Methane.Toolkit.M3U
         public Chunk[] Chunks { get; private set; }
 
 
+        public IWorkerType WorkerType => IWorkerType.PipeReusable;
 
+        [System.Text.Json.Serialization.JsonIgnore] public UniUI.IUniUI UI { get; set; }
 
-        public (bool, CSA) GetCSA(IUniUI UI)
+        public (bool, IPipe) GetCSA(IUniUI UI)
         {
             if (Chunks == null || Chunks.Length == 0) return (false, null);
 
@@ -202,7 +204,7 @@ namespace Methane.Toolkit.M3U
                 {
                     CSA csa = new CSA(UI);
                     csa.mask = "*chunk*";
-                    CSAFeed cf = new CSAFeed("*chunk*", ChunksEnumerable().GetEnumerator());
+                    CSAFeed cf = new CSAFeed("*chunk*", this);
                     csa.Feeds = new List<CSAFeed>() { cf };
                     csa.IsBuilt = true;
 
@@ -229,7 +231,7 @@ namespace Methane.Toolkit.M3U
                 UI.Log($"Use the following tool to assemble this into https://example.com/path/to/page/file1.ts format");
 
                 CSA csa = new CSA(UI);
-                CSAFeed cf = new CSAFeed("*chunk*", ChunksEnumerable().GetEnumerator());
+                CSAFeed cf = new CSAFeed("*chunk*", this);
                 csa.Feeds = new List<CSAFeed>() { cf };
                 csa.IsBuilt = true;
 
@@ -314,6 +316,31 @@ namespace Methane.Toolkit.M3U
             }
             Out.Chunks = _chunks.ToArray();
             return Out;
+        }
+
+        public IEnumerator<string> RunIterator()
+        {
+            return GenerateEnumerable().GetEnumerator();
+        }
+
+        public IEnumerable<string> GenerateEnumerable()
+        {
+            return ChunksEnumerable();
+        }
+
+        public void PromptParameters()
+        {
+            
+        }
+
+        public void BuildFromParameters()
+        {
+            
+        }
+
+        public void RunService()
+        {
+            
         }
     }
 
