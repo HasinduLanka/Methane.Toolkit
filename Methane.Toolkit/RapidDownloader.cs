@@ -29,9 +29,10 @@ namespace Methane.Toolkit
         public string Cookie;
         public string Headers;
         public string SavePath;
+        public bool DontAskRequireOrderLog = false;
+        public bool RequireOrderLog = false;
 
         public IPipe csa;
-        IEnumerator<string> bodyPipeline;
 
         public int runningThreads = 0;
         public int AllowedThrds;
@@ -122,6 +123,18 @@ namespace Methane.Toolkit
                 }
             }
 
+            // ChooseReqOrder:
+            if (!DontAskRequireOrderLog)
+            {
+                if (UI.Prompt("Do you want a downloaded-order.txt file ? [y/N]").ToLower().Trim() == "y")
+                {
+                    RequireOrderLog = true;
+                }
+                else
+                {
+                    RequireOrderLog = false;
+                }
+            }
 
         PromptHowManyThreads:
             if (!int.TryParse(UI.Prompt("How many threads to use?"), out AllowedThrds)) goto PromptHowManyThreads;
@@ -161,8 +174,14 @@ namespace Methane.Toolkit
 
             UI.Log("Rapid Downloader Running...");
 
-
-            bodyPipeline = csa.RunIterator();
+            if (RequireOrderLog)
+            {
+                bodyPipeline = PipelineSaver(csa, SavePath.TrimEnd('/') + ".downloaded-order.txt").GetEnumerator();
+            }
+            else
+            {
+                bodyPipeline = csa.RunIterator();
+            }
 
             for (int n = 0; n < AllowedThrds; n++)
             {
@@ -180,6 +199,18 @@ namespace Methane.Toolkit
 
 
 
+        }
+        private IEnumerator<string> bodyPipeline;
+        private IEnumerable<string> PipelineSaver(IPipe P, string path)
+        {
+            File.WriteAllText(path, "");
+            foreach (string item in P.GenerateEnumerable())
+            {
+                File.AppendAllText(path, item + Environment.NewLine);
+                yield return item;
+            }
+
+            UI?.Lab?.RegisterReusableWorker(new FileLineReader(path, UI), $"Saved order of {SavePath} downloads");
         }
 
 
@@ -279,7 +310,7 @@ namespace Methane.Toolkit
             return file;
         }
 
-        
+
 
         public static Stream GetStream(string url, string Cookie = "", string Headers = "")
         {
