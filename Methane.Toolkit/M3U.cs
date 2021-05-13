@@ -371,7 +371,7 @@ namespace Methane.Toolkit.M3U
             if (parts[1].Contains("URI"))
             {
                 IsFromUrl = true;
-                KeyPath = KeyPath.Substring(1, KeyPath.Length - 2);
+                // KeyPath = KeyPath.Substring(1, KeyPath.Length - 2);
                 Key = GetKeyFromUrl(KeyPath);
             }
             else KeyPath = string.Empty;
